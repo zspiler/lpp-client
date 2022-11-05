@@ -18,5 +18,9 @@ module.exports = {
     'vue/html-quotes': ['error', 'double', { avoidEscape: false }],
     'vuejs-accessibility/click-events-have-key-events': 'off',
     'vue/no-multiple-template-root': 'off',
+    'no-alert': 'off',
+    'vue/html-button-has-type': 'off',
+    'guard-for-in': 'off',
+    'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
   },
 };
