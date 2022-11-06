@@ -1,21 +1,29 @@
 <template>
-  <button @click="stopFetching">Stop fetching data</button>
-
-  <select v-model="selectedRoute" @change="refreshMap">
-    <option v-for="route in activeRoutes" :key="route">{{ route }}</option>
-  </select>
-  <button :disabled="!selectedRoute" @click="showAllRoutes">Show all</button>
-  <div id="map" />
+  <div class="map-container">
+    <VueMultiselect
+      class="route-select"
+      v-model="selectedRoutes"
+      @input="console.log('nice')"
+      :options="activeRoutes"
+      :multiple="true"
+      placeholder="Select routes to display"
+    />
+    <div id="map" />
+  </div>
 </template>
 
 <script>
-
 import leaflet from 'leaflet';
+import VueMultiselect from 'vue-multiselect';
+
 import axios from '../axios/index';
 import colors from '../colors';
 
 export default {
   name: 'HomeView',
+  components: {
+    VueMultiselect,
+  },
   data() {
     return {
       map: null,
@@ -23,7 +31,7 @@ export default {
       activeRoutes: [],
       buses: {},
       fetchInterval: null,
-      selectedRoute: null,
+      selectedRoutes: [],
     };
   },
   mounted() {
@@ -32,7 +40,7 @@ export default {
   },
   methods: {
     initializeMap() {
-      this.map = leaflet.map('map').setView([46.05772817637372, 14.505734444531713], 13, { zoomAnimation: false });
+      const map = leaflet.map('map').setView([46.05772817637372, 14.505734444531713], 14);
       leaflet.tileLayer(
         'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
         {
@@ -40,10 +48,10 @@ export default {
           attribution: `&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">
                        OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors`,
         },
-      ).addTo(this.map);
+      ).addTo(map);
+      this.map = map;
     },
     stopFetching() {
-      console.log('clearing interval');
       clearInterval(this.fetchInterval);
     },
     async fetchActiveRoutes() {
@@ -59,8 +67,7 @@ export default {
     },
     fetchBuses() {
       const requests = this.activeRoutes.reduce((prevRequests, route) => {
-        // TODO: add multi select
-        if (!this.selectedRoute || (this.selectedRoute && route === this.selectedRoute)) {
+        if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(route)) {
           prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route}&specific=1`));
         }
         return prevRequests;
@@ -84,11 +91,10 @@ export default {
         this.map.removeLayer(this.markers[i]);
       }
 
-      let busMarker;
       for (const busId in this.buses) {
-        if (!this.selectedRoute
-            || (this.selectedRoute && this.buses[busId].route_number === this.selectedRoute)) {
-          busMarker = this.createBusMarker(this.buses[busId]);
+        const routeNumber = this.buses[busId].route_number;
+        if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(routeNumber)) {
+          const busMarker = this.createBusMarker(this.buses[busId]);
           busMarker.addTo(this.map);
           this.markers.push(busMarker);
         }
@@ -121,12 +127,40 @@ export default {
       this.refreshMap();
     },
   },
+  watch: {
+    selectedRoutes() {
+      console.log('refreshing map!');
+      this.refreshMap();
+    },
+  },
 };
 </script>
+
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>
+<style>
+.map-container {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+.route-select {
+  position: absolute;
+  top: 5%;
+}
+</style>
 
 <style scoped>
 #map {
   height: 100vh;
   width: 100vw;
+}
+
+.route-select {
+  z-index: 9999;
+  text-align: center;
+  width: 400px;
+  left: 50%;
+  margin-left: -200px;
 }
 </style>
