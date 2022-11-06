@@ -9,12 +9,15 @@
       placeholder="Select routes to display"
     />
     <div id="map" />
+    <LoadingIndicator :loading="loading" />
+
   </div>
 </template>
 
 <script>
 import leaflet from 'leaflet';
 import VueMultiselect from 'vue-multiselect';
+import LoadingIndicator from '../components/LoadingIndicator.vue';
 
 import axios from '../axios/index';
 import colors from '../colors';
@@ -23,9 +26,11 @@ export default {
   name: 'HomeView',
   components: {
     VueMultiselect,
+    LoadingIndicator,
   },
   data() {
     return {
+      loading: true,
       map: null,
       markers: [],
       activeRoutes: [],
@@ -80,6 +85,8 @@ export default {
             this.buses[bus.bus_name] = bus;
           });
         });
+        this.loading = false;
+        console.log("refreshing map!");
         this.refreshMap();
       }).catch((errors) => {
         // TODO: handle errors
