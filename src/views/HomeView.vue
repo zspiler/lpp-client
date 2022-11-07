@@ -3,7 +3,6 @@
     <VueMultiselect
       class="route-select"
       v-model="selectedRoutes"
-      @input="console.log('nice')"
       :options="activeRoutes"
       :multiple="true"
       placeholder="Select routes to display"
@@ -14,13 +13,18 @@
   </div>
 </template>
 
+
 <script>
 import leaflet from 'leaflet';
+import 'leaflet-rotatedmarker';
+
 import VueMultiselect from 'vue-multiselect';
 import LoadingIndicator from '../components/LoadingIndicator.vue';
 
 import axios from '../axios/index';
 import colors from '../colors';
+
+import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
 
 export default {
   name: 'HomeView',
@@ -86,7 +90,6 @@ export default {
           });
         });
         this.loading = false;
-        console.log("refreshing map!");
         this.refreshMap();
       }).catch((errors) => {
         // TODO: handle errors
@@ -109,24 +112,39 @@ export default {
     },
     createBusMarker(bus) {
       const routeColor = colors[this.activeRoutes.indexOf(bus.route_number)];
-      const marker = leaflet.circle([bus.latitude, bus.longitude], {
-        color: routeColor,
-        fillColor: routeColor,
-        fillOpacity: 0.8,
-        radius: 30,
-        weight: 1,
+
+      const markerIconSize = 40;
+      const svgIcon = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? busIconMirrored : busIcon;
+      const divIcon = leaflet.divIcon({
+        className: 'bus-icon',
+        html: leaflet.Util.template(svgIcon, { color: routeColor }),
+        iconSize: [markerIconSize, markerIconSize],
+        iconAnchor: [markerIconSize / 2, markerIconSize / 2],
       });
 
-      marker.data = bus;
-      marker.bindTooltip(
-        `<b>${bus.route_number}</b><br>'${bus.route_name}'<br>${bus.destination}<br>`,
+      const rotationAngle = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? bus.cardinal_direction + 90 + 180 : bus.cardinal_direction + 90; // rotated 90 by default
+      const marker = leaflet.marker(
+        [bus.latitude, bus.longitude],
         {
-          direction: 'right',
-          sticky: true,
-          offset: [10, 0],
-          opacity: 0.7,
+          rotationAngle,
+          icon: divIcon,
+          riseOnHover: true,
         },
       );
+
+      marker.data = bus;
+
+      // TODO: tooltip breaking zoom
+      // marker.bindTooltip(
+      //   `<b>${bus.route_number}</b><br>'${bus.cardinal_direction}'<br>${bus.destination}<br>`,
+      //   {
+      //     direction: 'right',
+      //     sticky: true,
+      //     offset: [10, 0],
+      //     opacity: 0.9,
+      //   },
+      // );
+
       return marker;
     },
     showAllRoutes() {
@@ -144,7 +162,26 @@ export default {
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
+
 <style>
+
+.bus-icon {
+  background-color: rgb(32, 32, 32, 0.4);
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  opacity: 0.98;
+}
+
+.leaflet-tooltip-content-wrapper {
+  background-color: black;
+  color: white;
+  font-size: 14;
+}
+
+</style>
+
+<style scoped>
 .map-container {
   height: 100vh;
   width: 100vw;
@@ -155,9 +192,7 @@ export default {
   position: absolute;
   top: 5%;
 }
-</style>
 
-<style scoped>
 #map {
   height: 100vh;
   width: 100vw;
