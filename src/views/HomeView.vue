@@ -6,25 +6,33 @@
       :options="activeRoutes"
       :multiple="true"
       placeholder="Select routes to display"
+      select-label=""
     />
+
+    <div class="info-card" v-if="infoCardIsVisible" :style="{ background: getRouteColor(selectedBus.route_number) }">
+      <div class="route-number-icon">
+        <div :style="{ color: getRouteColor(selectedBus.route_number) }">
+          {{ selectedBus.route_number }}
+        </div>
+      </div>
+      <h4> {{ selectedBus.route_name }} </h4>
+      <p>To: {{ selectedBus.destination }}</p>
+    </div>
+
     <div id="map" />
     <LoadingIndicator :loading="loading" />
-
   </div>
 </template>
-
 
 <script>
 import leaflet from 'leaflet';
 import 'leaflet-rotatedmarker';
-
 import VueMultiselect from 'vue-multiselect';
-import LoadingIndicator from '../components/LoadingIndicator.vue';
 
 import axios from '../axios/index';
 import colors from '../colors';
-
 import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
+import LoadingIndicator from '../components/LoadingIndicator.vue';
 
 export default {
   name: 'HomeView',
@@ -34,13 +42,15 @@ export default {
   },
   data() {
     return {
+      infoCardIsVisible: false,
+      selectedBus: null,
       loading: true,
       map: null,
-      markers: [],
       activeRoutes: [],
       buses: {},
       fetchInterval: null,
       selectedRoutes: [],
+      markersLayerGroup: null,
     };
   },
   mounted() {
@@ -97,25 +107,52 @@ export default {
       });
     },
     refreshMap() {
-      for (let i = 0; i < this.markers.length; i++) {
-        this.map.removeLayer(this.markers[i]);
+      // clear old marker layer
+      if (this.markersLayerGroup) {
+        this.map.removeLayer(this.markersLayerGroup);
       }
 
+      // create new markers
+      const markers = [];
       for (const busId in this.buses) {
         const routeNumber = this.buses[busId].route_number;
         if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(routeNumber)) {
           const busMarker = this.createBusMarker(this.buses[busId]);
-          busMarker.addTo(this.map);
-          this.markers.push(busMarker);
+          markers.push(busMarker);
         }
       }
+
+      // create marker layer
+      this.markersLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
+        const clickedMarker = e.layer;
+        this.toggleInfoCard(clickedMarker.data);
+      })
+        .on('mouseover', (e) => {
+          const marker = e.layer;
+          marker.valueOf()._icon.style.backgroundColor = 'white';
+        }).on('mouseout', (e) => {
+          const marker = e.layer;
+          marker.valueOf()._icon.style.backgroundColor = 'rgba(32, 32, 32, 0.5)';
+        })
+        .addTo(this.map);
+    },
+    toggleInfoCard(bus) {
+      this.infoCardIsVisible = true;
+      this.selectedBus = bus;
+      this.focusOnBus(bus);
+    },
+    focusOnBus(bus) {
+      this.map.setView([bus.latitude, bus.longitude]);
+    },
+    getRouteColor(routeNumber) {
+      return colors[this.activeRoutes.indexOf(routeNumber)];
     },
     createBusMarker(bus) {
-      const routeColor = colors[this.activeRoutes.indexOf(bus.route_number)];
+      const routeColor = this.getRouteColor(bus.route_number);
 
       const markerIconSize = 40;
       const svgIcon = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? busIconMirrored : busIcon;
-      const divIcon = leaflet.divIcon({
+      const icon = leaflet.divIcon({
         className: 'bus-icon',
         html: leaflet.Util.template(svgIcon, { color: routeColor }),
         iconSize: [markerIconSize, markerIconSize],
@@ -127,11 +164,10 @@ export default {
         [bus.latitude, bus.longitude],
         {
           rotationAngle,
-          icon: divIcon,
+          icon,
           riseOnHover: true,
         },
       );
-
       marker.data = bus;
 
       // TODO: tooltip breaking zoom
@@ -154,7 +190,6 @@ export default {
   },
   watch: {
     selectedRoutes() {
-      console.log('refreshing map!');
       this.refreshMap();
     },
   },
@@ -164,9 +199,8 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 
 <style>
-
 .bus-icon {
-  background-color: rgb(32, 32, 32, 0.4);
+  background-color: rgba(32, 32, 32, 0.5);
   border-radius: 50%;
   height: 40px;
   width: 40px;
@@ -178,7 +212,6 @@ export default {
   color: white;
   font-size: 14;
 }
-
 </style>
 
 <style scoped>
@@ -188,9 +221,31 @@ export default {
   position: relative;
 }
 
-.route-select {
+.info-card {
   position: absolute;
+  opacity: 0.85;
   top: 5%;
+  right: 2%;
+  /* background-color: white; */
+  color: white;
+  border-radius: 2em;
+  z-index: 9999;
+  text-align: center;
+  width: 350px;
+  /* height: 150px; */
+  margin-left: -175px;
+}
+
+.route-number-icon {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  margin: 10px auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
 #map {
@@ -199,10 +254,12 @@ export default {
 }
 
 .route-select {
+  position: absolute;
+  top: 5%;
   z-index: 9999;
   text-align: center;
-  width: 400px;
+  width: 300px;
   left: 50%;
-  margin-left: -200px;
+  margin-left: -150px;
 }
 </style>

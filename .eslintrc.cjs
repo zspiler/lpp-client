@@ -22,5 +22,6 @@ module.exports = {
     'vue/html-button-has-type': 'off',
     'guard-for-in': 'off',
     'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
+    'no-underscore-dangle': 'off',
   },
 };
