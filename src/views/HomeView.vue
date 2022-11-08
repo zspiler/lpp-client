@@ -8,17 +8,12 @@
       placeholder="Select routes to display"
       select-label=""
     />
-
-    <div class="info-card" v-if="infoCardIsVisible" :style="{ background: getRouteColor(selectedBus.route_number) }">
-      <div class="route-number-icon">
-        <div :style="{ color: getRouteColor(selectedBus.route_number) }">
-          {{ selectedBus.route_number }}
-        </div>
-      </div>
-      <h4> {{ selectedBus.route_name }} </h4>
-      <p>To: {{ selectedBus.destination }}</p>
-    </div>
-
+    <BusInfoCard
+      v-if="selectedBus"
+      class="info-card"
+      :color="getRouteColor(selectedBus.route_number)"
+      :bus="selectedBus"
+    />
     <div id="map" />
     <LoadingIndicator :loading="loading" />
   </div>
@@ -33,16 +28,17 @@ import axios from '../axios/index';
 import colors from '../colors';
 import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
 import LoadingIndicator from '../components/LoadingIndicator.vue';
+import BusInfoCard from '../components/BusInfoCard.vue';
 
 export default {
   name: 'HomeView',
   components: {
     VueMultiselect,
     LoadingIndicator,
+    BusInfoCard,
   },
   data() {
     return {
-      infoCardIsVisible: false,
       selectedBus: null,
       loading: true,
       map: null,
@@ -125,7 +121,7 @@ export default {
       // create marker layer
       this.markersLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
         const clickedMarker = e.layer;
-        this.toggleInfoCard(clickedMarker.data);
+        this.showBusInfo(clickedMarker.data);
       })
         .on('mouseover', (e) => {
           const marker = e.layer;
@@ -136,12 +132,8 @@ export default {
         })
         .addTo(this.map);
     },
-    toggleInfoCard(bus) {
-      this.infoCardIsVisible = true;
+    showBusInfo(bus) {
       this.selectedBus = bus;
-      this.focusOnBus(bus);
-    },
-    focusOnBus(bus) {
       this.map.setView([bus.latitude, bus.longitude]);
     },
     getRouteColor(routeNumber) {
@@ -223,29 +215,9 @@ export default {
 
 .info-card {
   position: absolute;
-  opacity: 0.85;
   top: 5%;
   right: 2%;
-  /* background-color: white; */
-  color: white;
-  border-radius: 2em;
-  z-index: 9999;
-  text-align: center;
-  width: 350px;
-  /* height: 150px; */
   margin-left: -175px;
-}
-
-.route-number-icon {
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  margin: 10px auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
 }
 
 #map {
