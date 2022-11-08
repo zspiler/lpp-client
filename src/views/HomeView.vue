@@ -23,12 +23,13 @@
 import leaflet from 'leaflet';
 import 'leaflet-rotatedmarker';
 import VueMultiselect from 'vue-multiselect';
-
 import axios from '../axios/index';
-import colors from '../colors';
-import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
+
 import LoadingIndicator from '../components/LoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
+
+import colors from '../colors';
+import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
 
 export default {
   name: 'HomeView',
@@ -66,9 +67,6 @@ export default {
       ).addTo(map);
       this.map = map;
     },
-    stopFetching() {
-      clearInterval(this.fetchInterval);
-    },
     async fetchActiveRoutes() {
       try {
         const res = await axios.get('route/active-routes');
@@ -81,11 +79,11 @@ export default {
       }
     },
     fetchBuses() {
-      const requests = this.activeRoutes.reduce((prevRequests, route) => {
+      const requests = this.activeRoutes.reduce((accumulator, route) => {
         if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(route)) {
-          prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route}&specific=1`));
+          accumulator.push(axios.get(`bus/buses-on-route?route-group-number=${route}&specific=1`));
         }
-        return prevRequests;
+        return accumulator;
       }, []);
 
       Promise.all(requests).then((responses) => {
@@ -151,11 +149,15 @@ export default {
         iconAnchor: [markerIconSize / 2, markerIconSize / 2],
       });
 
-      const rotationAngle = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? bus.cardinal_direction + 90 + 180 : bus.cardinal_direction + 90; // rotated 90 by default
+      let iconRotationAngle = bus.cardinal_direction + 90;
+      if (bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180) {
+        iconRotationAngle += 180;
+      }
+
       const marker = leaflet.marker(
         [bus.latitude, bus.longitude],
         {
-          rotationAngle,
+          iconRotationAngle,
           icon,
           riseOnHover: true,
         },
