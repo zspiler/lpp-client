@@ -1,9 +1,12 @@
 <template>
+
   <div class="map-container">
     <VueMultiselect
       class="route-select"
       v-model="selectedRoutes"
       :options="activeRoutes"
+      track-by="route_id"
+      label="route_number"
       :multiple="true"
       placeholder="Select routes to display"
       select-label=""
@@ -48,6 +51,8 @@ export default {
       fetchInterval: null,
       selectedRoutes: [],
       markersLayerGroup: null,
+      routePathLayerGroup: null,
+      displayedRoute: null,
     };
   },
   mounted() {
@@ -65,13 +70,34 @@ export default {
                        OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors`,
         },
       ).addTo(map);
+
+      this.routePathLayerGroup = new leaflet.LayerGroup();
+      this.routePathLayerGroup.addTo(map);
+
       this.map = map;
+    },
+    async displayRoutePath(route) {
+      try {
+        const res = await axios.get(`route/routes?route-id=${route.route_id}&shape=1`);
+        const routeShape = res.data.data[0].geojson_shape;
+        this.routePathLayerGroup.addLayer(leaflet.geoJSON(routeShape).addTo(this.map));
+        this.displayedRoute = route;
+      } catch (error) {
+        console.log(error);
+      }
     },
     async fetchActiveRoutes() {
       try {
         const res = await axios.get('route/active-routes');
-        const routeNumbers = res.data.data.map((route) => route.route_number);
-        this.activeRoutes = [...new Set(routeNumbers)];
+        this.activeRoutes = res.data.data.reduce((accumulator, route) => {
+          // filter out duplicates
+          if (!(accumulator.length >= 1 && accumulator[accumulator.length - 1].route_id === route.route_id)) {
+            accumulator.push({ route_number: route.route_number, route_id: route.route_id });
+          }
+
+          return accumulator;
+        }, []);
+
         this.fetchBuses();
         this.fetchInterval = setInterval(this.fetchBuses, 5000);
       } catch (error) {
@@ -80,8 +106,8 @@ export default {
     },
     fetchBuses() {
       const requests = this.activeRoutes.reduce((accumulator, route) => {
-        if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(route)) {
-          accumulator.push(axios.get(`bus/buses-on-route?route-group-number=${route}&specific=1`));
+        if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(route.route_id)) {
+          accumulator.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
         }
         return accumulator;
       }, []);
@@ -101,22 +127,31 @@ export default {
       });
     },
     refreshMap() {
-      // clear old marker layer
+      // update route path layer
+      if (this.selectedRoutes.length === 1 && this.displayedRoute === null) {
+        this.routePathLayerGroup.clearLayers();
+        this.displayRoutePath(this.selectedRoutes[0]);
+      } else if (this.selectedRoutes.length !== 1 && this.displayedRoute !== null) {
+        this.routePathLayerGroup.clearLayers();
+        this.displayedRoute = null;
+      }
+
+      // clear bus marker layer
       if (this.markersLayerGroup) {
         this.map.removeLayer(this.markersLayerGroup);
       }
 
-      // create new markers
+      // create new bus markers
       const markers = [];
       for (const busId in this.buses) {
-        const routeNumber = this.buses[busId].route_number;
-        if (this.selectedRoutes.length === 0 || this.selectedRoutes.includes(routeNumber)) {
+        const routeId = this.buses[busId].route_id;
+        if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(routeId)) {
           const busMarker = this.createBusMarker(this.buses[busId]);
           markers.push(busMarker);
         }
       }
 
-      // create marker layer
+      // create bus marker layer
       this.markersLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
         const clickedMarker = e.layer;
         this.showBusInfo(clickedMarker.data);
@@ -135,7 +170,11 @@ export default {
       this.map.setView([bus.latitude, bus.longitude]);
     },
     getRouteColor(routeNumber) {
-      return colors[this.activeRoutes.indexOf(routeNumber)];
+      for (let i = 0; i < this.activeRoutes.length; i++) {
+        const route = this.activeRoutes[i];
+        if (route.route_number === routeNumber) return colors[i];
+      }
+      return undefined;
     },
     createBusMarker(bus) {
       const routeColor = this.getRouteColor(bus.route_number);
@@ -157,7 +196,7 @@ export default {
       const marker = leaflet.marker(
         [bus.latitude, bus.longitude],
         {
-          iconRotationAngle,
+          rotationAngle: iconRotationAngle,
           icon,
           riseOnHover: true,
         },
@@ -180,6 +219,11 @@ export default {
     showAllRoutes() {
       this.selectedRoute = null;
       this.refreshMap();
+    },
+  },
+  computed: {
+    selectedRouteIds() {
+      return this.selectedRoutes.map((selectedRoute) => selectedRoute.route_id);
     },
   },
   watch: {
