@@ -10,12 +10,14 @@
       placeholder="Select routes to display"
       select-label=""
     />
-    <BusInfoCard
-      v-if="selectedBus"
-      class="info-card"
-      :color="routeColors[selectedBus.route_number]"
-      :bus="selectedBus"
-    />
+    <Transition name="bus-info-card">
+      <BusInfoCard
+        v-if="selectedBus"
+        class="info-card"
+        :color="routeColors[selectedBus.route_number]"
+        :bus="selectedBus"
+      />
+    </Transition>
     <div id="map" />
     <LoadingIndicator :loading="loading" />
   </div>
@@ -234,6 +236,7 @@ export default {
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
+
 <style>
 .bus-icon {
   background-color: rgba(32, 32, 32, 0.5);
@@ -242,15 +245,19 @@ export default {
   width: 40px;
   opacity: 0.98;
 }
-
-.leaflet-tooltip-content-wrapper {
-  background-color: black;
-  color: white;
-  font-size: 14;
-}
 </style>
 
 <style scoped>
+.bus-info-card-enter-active,
+.bus-info-card-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.bus-info-card-enter-from,
+.bus-info-card-leave-to {
+  opacity: 0;
+}
+
 .map-container {
   height: 100vh;
   width: 100vw;
