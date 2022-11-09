@@ -1,5 +1,4 @@
 <template>
-
   <div class="map-container">
     <VueMultiselect
       class="route-select"
@@ -14,7 +13,7 @@
     <BusInfoCard
       v-if="selectedBus"
       class="info-card"
-      :color="getRouteColor(selectedBus.route_number)"
+      :color="routeColors[selectedBus.route_number]"
       :bus="selectedBus"
     />
     <div id="map" />
@@ -43,16 +42,17 @@ export default {
   },
   data() {
     return {
-      selectedBus: null,
-      loading: true,
       map: null,
+      routeColors: {},
       activeRoutes: [],
       buses: {},
       fetchInterval: null,
       selectedRoutes: [],
+      selectedBus: null,
       markersLayerGroup: null,
       routePathLayerGroup: null,
       displayedRoute: null,
+      loading: true,
     };
   },
   mounted() {
@@ -89,27 +89,28 @@ export default {
     async fetchActiveRoutes() {
       try {
         const res = await axios.get('route/active-routes');
-        this.activeRoutes = res.data.data.reduce((accumulator, route) => {
-          // filter out duplicates
-          if (!(accumulator.length >= 1 && accumulator[accumulator.length - 1].route_id === route.route_id)) {
-            accumulator.push({ route_number: route.route_number, route_id: route.route_id });
+        const routes = [];
+        res.data.data.forEach((route, index) => {
+          if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
+            routes.push({ route_number: route.route_number, route_id: route.route_id });
+            this.routeColors[route.route_number] = colors[index] || '#aaaaaa';
           }
-
-          return accumulator;
-        }, []);
+        });
+        this.activeRoutes = routes;
 
         this.fetchBuses();
         this.fetchInterval = setInterval(this.fetchBuses, 5000);
       } catch (error) {
+        this.loading = false;
         console.log(error);
       }
     },
     fetchBuses() {
-      const requests = this.activeRoutes.reduce((accumulator, route) => {
+      const requests = this.activeRoutes.reduce((prevRequests, route) => {
         if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(route.route_id)) {
-          accumulator.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
+          prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
         }
-        return accumulator;
+        return prevRequests;
       }, []);
 
       Promise.all(requests).then((responses) => {
@@ -123,19 +124,25 @@ export default {
         this.refreshMap();
       }).catch((errors) => {
         // TODO: handle errors
+        this.loading = false;
         console.log(errors);
       });
     },
     refreshMap() {
-      // update route path layer
+      this.updateRoutePaths();
+      this.updateBusMarkers();
+    },
+    updateRoutePaths() {
       if (this.selectedRoutes.length === 1 && this.displayedRoute === null) {
         this.routePathLayerGroup.clearLayers();
         this.displayRoutePath(this.selectedRoutes[0]);
-      } else if (this.selectedRoutes.length !== 1 && this.displayedRoute !== null) {
+      }
+      if (this.selectedRoutes.length !== 1 && this.displayedRoute !== null) {
         this.routePathLayerGroup.clearLayers();
         this.displayedRoute = null;
       }
-
+    },
+    updateBusMarkers() {
       // clear bus marker layer
       if (this.markersLayerGroup) {
         this.map.removeLayer(this.markersLayerGroup);
@@ -169,15 +176,8 @@ export default {
       this.selectedBus = bus;
       this.map.setView([bus.latitude, bus.longitude]);
     },
-    getRouteColor(routeNumber) {
-      for (let i = 0; i < this.activeRoutes.length; i++) {
-        const route = this.activeRoutes[i];
-        if (route.route_number === routeNumber) return colors[i];
-      }
-      return undefined;
-    },
     createBusMarker(bus) {
-      const routeColor = this.getRouteColor(bus.route_number);
+      const routeColor = this.routeColors[bus.route_number];
 
       const markerIconSize = 40;
       const svgIcon = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? busIconMirrored : busIcon;
@@ -202,18 +202,6 @@ export default {
         },
       );
       marker.data = bus;
-
-      // TODO: tooltip breaking zoom
-      // marker.bindTooltip(
-      //   `<b>${bus.route_number}</b><br>'${bus.cardinal_direction}'<br>${bus.destination}<br>`,
-      //   {
-      //     direction: 'right',
-      //     sticky: true,
-      //     offset: [10, 0],
-      //     opacity: 0.9,
-      //   },
-      // );
-
       return marker;
     },
     showAllRoutes() {
