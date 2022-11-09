@@ -271,6 +271,14 @@ export default {
   margin-left: -175px;
 }
 
+@media only screen and (max-width: 1000px) {
+  .info-card {
+    bottom: 10%;
+    left: 50%;
+    top: auto;
+  }
+}
+
 #map {
   height: 100vh;
   width: 100vw;
