@@ -208,6 +208,16 @@ export default {
       this.selectedRoute = null;
       this.refreshMap();
     },
+    updateSelectedBus() {
+      if (this.selectedBus) {
+        const selectedBusIsOnASelectedRoute = this.selectedRoutes.find(
+          (selectedRoute) => selectedRoute.route_id === this.selectedBus.route_id,
+        );
+        if (!selectedBusIsOnASelectedRoute) {
+          this.selectedBus = null;
+        }
+      }
+    },
   },
   computed: {
     selectedRouteIds() {
@@ -217,13 +227,13 @@ export default {
   watch: {
     selectedRoutes() {
       this.refreshMap();
+      this.updateSelectedBus();
     },
   },
 };
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
 <style>
 .bus-icon {
   background-color: rgba(32, 32, 32, 0.5);
