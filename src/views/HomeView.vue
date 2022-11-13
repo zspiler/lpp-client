@@ -167,10 +167,12 @@ export default {
       })
         .on('mouseover', (e) => {
           const marker = e.layer;
-          marker.valueOf()._icon.style.backgroundColor = 'white';
+          marker.valueOf()._icon.style.background = 'white';
+          marker.valueOf()._icon.style.filter = 'drop-shadow(0px 0px 10px #ffffff)';
         }).on('mouseout', (e) => {
           const marker = e.layer;
-          marker.valueOf()._icon.style.backgroundColor = 'rgba(32, 32, 32, 0.5)';
+          marker.valueOf()._icon.style.background = 'none';
+          marker.valueOf()._icon.style.filter = 'drop-shadow(0px 0px 10px #000000)';
         })
         .addTo(this.map);
     },
@@ -239,7 +241,7 @@ export default {
 
 <style>
 .bus-icon {
-  background-color: rgba(32, 32, 32, 0.5);
+  filter: drop-shadow(0px 0px 10px #000000);
   border-radius: 50%;
   height: 40px;
   width: 40px;
