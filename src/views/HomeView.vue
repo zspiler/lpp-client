@@ -16,6 +16,7 @@
         class="info-card"
         :color="routeColors[selectedBus.route_number]"
         :bus="selectedBus"
+        @close="hideBusInfoCard"
       />
     </Transition>
     <div id="map" />
@@ -163,7 +164,7 @@ export default {
       // create bus marker layer
       this.markersLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
         const clickedMarker = e.layer;
-        this.showBusInfo(clickedMarker.data);
+        this.showBusInfoCard(clickedMarker.data);
       })
         .on('mouseover', (e) => {
           const marker = e.layer;
@@ -176,9 +177,12 @@ export default {
         })
         .addTo(this.map);
     },
-    showBusInfo(bus) {
+    showBusInfoCard(bus) {
       this.selectedBus = bus;
       this.map.setView([bus.latitude, bus.longitude]);
+    },
+    hideBusInfoCard() {
+      this.selectedBus = null;
     },
     createBusMarker(bus) {
       const routeColor = this.routeColors[bus.route_number];

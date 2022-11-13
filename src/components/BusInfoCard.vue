@@ -7,12 +7,14 @@
     </div>
     <h4> {{ bus.route_name }} </h4>
     <p>To: {{ bus.destination }}</p>
+    <button class="close-button" @click="closeCard" />
   </div>
 </template>
 
 <script>
 export default {
   name: 'BusInfoCard',
+  emits: ['close'],
   props: {
     color: {
       type: String,
@@ -21,6 +23,11 @@ export default {
     bus: {
       type: Object,
       required: true,
+    },
+  },
+  methods: {
+    closeCard() {
+      this.$emit('close');
     },
   },
 };
@@ -46,5 +53,34 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  height: 22px;
+  width: 22px;
+  opacity: 0.4;
+  cursor: pointer;
+}
+.close-button:hover {
+  opacity: 1;
+}
+.close-button:before, .close-button:after {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 2px;
+  top: 0px;
+  background-color: rgb(253, 253, 253);
+}
+.close-button:before {
+  transform: rotate(45deg);
+}
+.close-button:after {
+  transform: rotate(-45deg);
 }
 </style>
