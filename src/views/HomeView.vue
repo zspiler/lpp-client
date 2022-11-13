@@ -7,6 +7,7 @@
       track-by="route_id"
       label="route_number"
       :multiple="true"
+      :disabled="loading"
       placeholder="Select routes to display"
       select-label=""
     />
@@ -50,10 +51,12 @@ export default {
       routeColors: {},
       activeRoutes: [],
       buses: {},
+      stations: {},
       fetchBusesInterval: null,
       selectedRoutes: [],
       selectedBus: null,
-      markersLayerGroup: null,
+      busMarkerLayerGroup: null,
+      stationMarkerLayerGroup: null,
       routeLayerGroup: null,
       loading: true,
     };
@@ -82,6 +85,38 @@ export default {
 
       this.map = map;
     },
+    async displayStationsOnSelectedRoutes() {
+      const routes = this.selectedRoutes.filter(
+        (route) => !(route.route_number in this.stations),
+      );
+      const requests = routes.map((route) => axios.get(`route/stations-on-route?trip-id=${route.trip_id}`));
+
+      // get not yet fetched stations
+      Promise.all(requests).then((responses) => {
+        responses.forEach((res, index) => {
+          const stations = res.data.data;
+          const route = routes[index];
+          this.stations[route.route_number] = stations; // cache stations
+        });
+
+        // clear station marker layer
+        if (this.stationMarkerLayerGroup) {
+          this.map.removeLayer(this.stationMarkerLayerGroup);
+        }
+
+        // create new markers
+        const stationMarkers = [];
+        this.selectedRoutes.forEach((route) => {
+          this.stations[route.route_number].forEach((station) => {
+            const newStationMarker = this.createStationMarker(route, station);
+            stationMarkers.push(newStationMarker);
+          });
+        });
+
+        // (re)create station marker layer group
+        this.stationMarkerLayerGroup = leaflet.featureGroup(stationMarkers).addTo(this.map);
+      });
+    },
     async displaySelectedRoutes() {
       if (this.selectedRoutes.length === 0) {
         this.routeLayerGroup.clearLayers();
@@ -108,10 +143,10 @@ export default {
               },
             },
           );
-          this.routeShapes[routeNumber] = routeGeoJSONLayer; // store route shape for later use
+          this.routeShapes[routeNumber] = routeGeoJSONLayer; // cache route GeoJSON
         });
 
-        // recreate route shape layers
+        // (re)create route shape layers
         this.routeLayerGroup.clearLayers();
         this.selectedRoutes.forEach((selectedRoute) => {
           const routeShapeLayer = this.routeShapes[selectedRoute.route_number];
@@ -125,15 +160,15 @@ export default {
     async fetchActiveRoutes() {
       try {
         const res = await axios.get('route/active-routes');
+        const data = res.data.data;
         const routes = [];
-        res.data.data.forEach((route, index) => {
+        data.forEach((route, index) => {
           if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
-            routes.push({ route_number: route.route_number, route_id: route.route_id });
+            routes.push(route);
             this.routeColors[route.route_number] = colors[index] || '#aaaaaa';
           }
         });
         this.activeRoutes = routes;
-
         this.fetchBuses();
         this.fetchBusesInterval = setInterval(this.fetchBuses, 5000);
       } catch (error) {
@@ -151,8 +186,8 @@ export default {
 
       Promise.all(requests).then((responses) => {
         responses.forEach((res) => {
-          const data = res.data.data;
-          data.forEach((bus) => {
+          const busData = res.data.data;
+          busData.forEach((bus) => {
             this.buses[bus.bus_name] = bus;
           });
         });
@@ -166,8 +201,8 @@ export default {
     },
     updateBusMarkers() {
       // clear bus marker layer
-      if (this.markersLayerGroup) {
-        this.map.removeLayer(this.markersLayerGroup);
+      if (this.busMarkerLayerGroup) {
+        this.map.removeLayer(this.busMarkerLayerGroup);
       }
 
       // create new bus markers
@@ -180,8 +215,8 @@ export default {
         }
       }
 
-      // create bus marker layer
-      this.markersLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
+      // (re)create bus marker layer group
+      this.busMarkerLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
         const clickedMarker = e.layer;
         this.showBusInfoCard(clickedMarker.data);
       })
@@ -231,6 +266,17 @@ export default {
       marker.data = bus;
       return marker;
     },
+    createStationMarker(route, station) {
+      const marker = leaflet.circle(
+        [station.latitude, station.longitude],
+        {
+          color: this.routeColors[route.route_number],
+          opacity: 0.8,
+          radius: 25,
+        },
+      );
+      return marker;
+    },
     showAllRoutes() {
       this.selectedRoute = null;
       this.updateBusMarkers();
@@ -255,6 +301,7 @@ export default {
     selectedRoutes() {
       this.updateBusMarkers();
       this.displaySelectedRoutes();
+      this.displayStationsOnSelectedRoutes();
       this.updateSelectedBus();
     },
   },
