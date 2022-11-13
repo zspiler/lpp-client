@@ -46,15 +46,15 @@ export default {
   data() {
     return {
       map: null,
+      routeShapes: {},
       routeColors: {},
       activeRoutes: [],
       buses: {},
-      fetchInterval: null,
+      fetchBusesInterval: null,
       selectedRoutes: [],
       selectedBus: null,
       markersLayerGroup: null,
-      routePathLayerGroup: null,
-      displayedRoute: null,
+      routeLayerGroup: null,
       loading: true,
     };
   },
@@ -62,9 +62,12 @@ export default {
     this.initializeMap();
     this.fetchActiveRoutes();
   },
+  unmounted() {
+    clearInterval(this.fetchBusesInterval);
+  },
   methods: {
     initializeMap() {
-      const map = leaflet.map('map').setView([46.05772817637372, 14.505734444531713], 14);
+      const map = leaflet.map('map').setView([46.0577, 14.5057], 14);
       leaflet.tileLayer(
         'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
         {
@@ -74,20 +77,50 @@ export default {
         },
       ).addTo(map);
 
-      this.routePathLayerGroup = new leaflet.LayerGroup();
-      this.routePathLayerGroup.addTo(map);
+      this.routeLayerGroup = new leaflet.LayerGroup();
+      this.routeLayerGroup.addTo(map);
 
       this.map = map;
     },
-    async displayRoutePath(route) {
-      try {
-        const res = await axios.get(`route/routes?route-id=${route.route_id}&shape=1`);
-        const routeShape = res.data.data[0].geojson_shape;
-        this.routePathLayerGroup.addLayer(leaflet.geoJSON(routeShape).addTo(this.map));
-        this.displayedRoute = route;
-      } catch (error) {
-        console.log(error);
+    async displaySelectedRoutes() {
+      if (this.selectedRoutes.length === 0) {
+        this.routeLayerGroup.clearLayers();
+        return;
       }
+
+      const requests = this.selectedRoutes.reduce((prevRequests, route) => {
+        if (!(route.route_number in this.routeShapes)) {
+          prevRequests.push(axios.get(`route/routes?route-id=${route.route_id}&shape=1`));
+        }
+        return prevRequests;
+      }, []);
+
+      Promise.all(requests).then((responses) => {
+        responses.forEach((res) => {
+          const routeNumber = res.data.data[0].route_number;
+          const routeShape = res.data.data[0].geojson_shape;
+          const routeGeoJSONLayer = leaflet.geoJSON(
+            routeShape,
+            {
+              style: {
+                color: this.routeColors[routeNumber],
+                opacity: 0.65,
+              },
+            },
+          );
+          this.routeShapes[routeNumber] = routeGeoJSONLayer; // store route shape for later use
+        });
+
+        // recreate route shape layers
+        this.routeLayerGroup.clearLayers();
+        this.selectedRoutes.forEach((selectedRoute) => {
+          const routeShapeLayer = this.routeShapes[selectedRoute.route_number];
+          this.routeLayerGroup.addLayer(routeShapeLayer.addTo(this.map));
+        });
+      }).catch((errors) => {
+        // TODO: handle errors
+        console.log(errors);
+      });
     },
     async fetchActiveRoutes() {
       try {
@@ -102,7 +135,7 @@ export default {
         this.activeRoutes = routes;
 
         this.fetchBuses();
-        this.fetchInterval = setInterval(this.fetchBuses, 5000);
+        this.fetchBusesInterval = setInterval(this.fetchBuses, 5000);
       } catch (error) {
         this.loading = false;
         console.log(error);
@@ -124,26 +157,12 @@ export default {
           });
         });
         this.loading = false;
-        this.refreshMap();
+        this.updateBusMarkers();
       }).catch((errors) => {
         // TODO: handle errors
         this.loading = false;
         console.log(errors);
       });
-    },
-    refreshMap() {
-      this.updateRoutePaths();
-      this.updateBusMarkers();
-    },
-    updateRoutePaths() {
-      if (this.selectedRoutes.length === 1 && this.displayedRoute === null) {
-        this.routePathLayerGroup.clearLayers();
-        this.displayRoutePath(this.selectedRoutes[0]);
-      }
-      if (this.selectedRoutes.length !== 1 && this.displayedRoute !== null) {
-        this.routePathLayerGroup.clearLayers();
-        this.displayedRoute = null;
-      }
     },
     updateBusMarkers() {
       // clear bus marker layer
@@ -214,7 +233,7 @@ export default {
     },
     showAllRoutes() {
       this.selectedRoute = null;
-      this.refreshMap();
+      this.updateBusMarkers();
     },
     updateSelectedBus() {
       if (this.selectedBus) {
@@ -234,7 +253,8 @@ export default {
   },
   watch: {
     selectedRoutes() {
-      this.refreshMap();
+      this.updateBusMarkers();
+      this.displaySelectedRoutes();
       this.updateSelectedBus();
     },
   },
