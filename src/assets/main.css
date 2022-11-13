@@ -33,3 +33,17 @@ nav a.router-link-exact-active {
   text-decoration: underline;
   cursor: default;
 }
+
+/* VueMultiselect customizations */
+
+.multiselect__tag {
+  background: rgb(169, 169, 237);
+}
+
+.multiselect__tag-icon::after {
+  color: gray;
+}
+
+.multiselect__option--highlight {
+  background: rgb(169, 169, 237)
+}

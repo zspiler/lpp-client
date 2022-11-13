@@ -241,8 +241,6 @@ export default {
 };
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
 <style>
 .bus-icon {
   filter: drop-shadow(0px 0px 10px #000000);
