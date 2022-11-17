@@ -71,14 +71,11 @@ export default {
   methods: {
     initializeMap() {
       const map = leaflet.map('map').setView([46.0577, 14.5057], 14);
-      leaflet.tileLayer(
-        'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
-        {
-          minZoom: 12,
-          attribution: `&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">
-                       OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors`,
-        },
-      ).addTo(map);
+
+      leaflet.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        minZoom: 12,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>',
+      }).addTo(map);
 
       this.routeLayerGroup = new leaflet.LayerGroup();
       this.routeLayerGroup.addTo(map);
@@ -316,6 +313,11 @@ export default {
   width: 40px;
   opacity: 0.98;
 }
+
+.leaflet-tile-pane {
+  filter: invert(1) saturate(0%) contrast(60%) brightness(80%)
+}
+
 </style>
 
 <style scoped>
