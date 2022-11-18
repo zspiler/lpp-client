@@ -35,7 +35,7 @@ import LoadingIndicator from '../components/LoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
 
 import colors from '../colors';
-import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
+import { createBusMarker, createStationMarker } from '../utils/leaflet';
 
 export default {
   name: 'HomeView',
@@ -83,9 +83,7 @@ export default {
       this.map = map;
     },
     async displayStationsOnSelectedRoutes() {
-      const routes = this.selectedRoutes.filter(
-        (route) => !(route.route_number in this.stations),
-      );
+      const routes = this.selectedRoutes.filter((route) => !(route.route_number in this.stations));
       const requests = routes.map((route) => axios.get(`route/stations-on-route?trip-id=${route.trip_id}`));
 
       // get not yet fetched stations
@@ -105,7 +103,8 @@ export default {
         const stationMarkers = [];
         this.selectedRoutes.forEach((route) => {
           this.stations[route.route_number].forEach((station) => {
-            const newStationMarker = this.createStationMarker(route, station);
+            const stationColor = this.routeColors[route.route_number];
+            const newStationMarker = createStationMarker(station, stationColor);
             stationMarkers.push(newStationMarker);
           });
         });
@@ -127,6 +126,15 @@ export default {
         return prevRequests;
       }, []);
 
+      if (requests.length === 0) {
+        this.routeLayerGroup.clearLayers();
+        this.selectedRoutes.forEach((selectedRoute) => {
+          const routeShapeLayer = this.routeShapes[selectedRoute.route_number];
+          this.routeLayerGroup.addLayer(routeShapeLayer.addTo(this.map));
+        });
+      }
+
+      this.loading = true;
       Promise.all(requests).then((responses) => {
         responses.forEach((res) => {
           const routeNumber = res.data.data[0].route_number;
@@ -140,6 +148,7 @@ export default {
               },
             },
           );
+          this.loading = false;
           this.routeShapes[routeNumber] = routeGeoJSONLayer; // cache route GeoJSON
         });
 
@@ -150,6 +159,7 @@ export default {
           this.routeLayerGroup.addLayer(routeShapeLayer.addTo(this.map));
         });
       }).catch((errors) => {
+        this.loading = true;
         // TODO: handle errors
         console.log(errors);
       });
@@ -157,9 +167,9 @@ export default {
     async fetchActiveRoutes() {
       try {
         const res = await axios.get('route/active-routes');
-        const data = res.data.data;
+        const fetchedRoutes = res.data.data;
         const routes = [];
-        data.forEach((route, index) => {
+        fetchedRoutes.forEach((route, index) => {
           if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
             routes.push(route);
             this.routeColors[route.route_number] = colors[index] || '#aaaaaa';
@@ -183,8 +193,8 @@ export default {
 
       Promise.all(requests).then((responses) => {
         responses.forEach((res) => {
-          const busData = res.data.data;
-          busData.forEach((bus) => {
+          const fetchedBuses = res.data.data;
+          fetchedBuses.forEach((bus) => {
             this.buses[bus.bus_name] = bus;
           });
         });
@@ -207,7 +217,8 @@ export default {
       for (const busId in this.buses) {
         const routeId = this.buses[busId].route_id;
         if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(routeId)) {
-          const busMarker = this.createBusMarker(this.buses[busId]);
+          const busColor = this.routeColors[this.buses[busId].route_number];
+          const busMarker = createBusMarker(this.buses[busId], busColor);
           markers.push(busMarker);
         }
       }
@@ -234,45 +245,6 @@ export default {
     },
     hideBusInfoCard() {
       this.selectedBus = null;
-    },
-    createBusMarker(bus) {
-      const routeColor = this.routeColors[bus.route_number];
-
-      const markerIconSize = 40;
-      const svgIcon = bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180 ? busIconMirrored : busIcon;
-      const icon = leaflet.divIcon({
-        className: 'bus-icon',
-        html: leaflet.Util.template(svgIcon, { color: routeColor }),
-        iconSize: [markerIconSize, markerIconSize],
-        iconAnchor: [markerIconSize / 2, markerIconSize / 2],
-      });
-
-      let iconRotationAngle = bus.cardinal_direction + 90;
-      if (bus.cardinal_direction >= 0 && bus.cardinal_direction <= 180) {
-        iconRotationAngle += 180;
-      }
-
-      const marker = leaflet.marker(
-        [bus.latitude, bus.longitude],
-        {
-          rotationAngle: iconRotationAngle,
-          icon,
-          riseOnHover: true,
-        },
-      );
-      marker.data = bus;
-      return marker;
-    },
-    createStationMarker(route, station) {
-      const marker = leaflet.circle(
-        [station.latitude, station.longitude],
-        {
-          color: this.routeColors[route.route_number],
-          opacity: 0.8,
-          radius: 25,
-        },
-      );
-      return marker;
     },
     showAllRoutes() {
       this.selectedRoute = null;
