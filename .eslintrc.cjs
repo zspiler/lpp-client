@@ -23,5 +23,8 @@ module.exports = {
     'guard-for-in': 'off',
     'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
     'no-underscore-dangle': 'off',
+    'arrow-body-style': 'off',
+    'import/prefer-default-export': 'off',
+    'quote-props': 'off',
   },
 };

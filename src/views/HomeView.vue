@@ -11,273 +11,270 @@
       placeholder="Select routes to display"
       select-label=""
     />
-    <Transition name="bus-info-card">
-      <BusInfoCard
-        v-if="selectedBus"
-        class="info-card"
-        :color="routeColors[selectedBus.route_number]"
-        :bus="selectedBus"
-        @close="hideBusInfoCard"
+
+    <LMap
+      v-bind="mapConfig"
+      :options="mapOptions"
+    >
+
+      <LTileLayer :url="tilesUrl" :attribution="tileAttribution" />
+
+      <LCircleMarker
+        v-for="marker in busMarkers"
+        :key="marker.bus.bus_name"
+        :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
+        :radius="10"
+        :color="marker.color"
+        :fill="true"
+        :fillColor="marker.color"
+        :fillOpacity="1"
+        :opacity="0.5"
+      >
+        <LTooltip>
+          <div class="route-number-icon">
+            <div :style="{ color: marker.color }">
+              {{ marker.bus.route_number }}
+            </div>
+          </div>
+          <h4> {{ marker.bus.route_name }} </h4>
+          <p>To: {{ marker.bus.destination }}</p>
+        </LTooltip>
+      </LCircleMarker>
+
+      <LCircleMarker
+        v-for="marker in stationMarkers"
+        :key="marker.station.name"
+        :lat-lng="[marker.station.latitude, marker.station.longitude]"
+        :radius="10"
+        :color="marker.color"
+        :fill="true"
+        :fillColor="marker.color"
+        :fillOpacity="0.4"
+        :opacity="0.2"
+      >
+        <LTooltip>
+          <div>
+            {{ marker.station.name }}
+          </div>
+        </LTooltip>
+      </LCircleMarker>
+
+      <LGeoJson
+        v-for="selectedRouteShape in selectedRouteShapes"
+        :key="selectedRouteShape.routeNumber"
+        :geojson="selectedRouteShape"
+        :options="{
+          style: {
+            color: selectedRouteShape.color,
+            opacity: 0.65,
+          },
+        }"
       />
-    </Transition>
-    <div id="map" />
+    </LMap>
+
     <LoadingIndicator :loading="loading" />
+
   </div>
 </template>
 
-<script>
-import leaflet from 'leaflet';
-import 'leaflet-rotatedmarker';
+<script setup>
+
+import {
+  ref, onMounted, onUnmounted, watch, computed,
+} from 'vue';
+
+import 'leaflet/dist/leaflet.css';
+import {
+  LMap, LTileLayer, LCircleMarker, LTooltip, LGeoJson,
+} from '@vue-leaflet/vue-leaflet';
+
 import VueMultiselect from 'vue-multiselect';
+
 import axios from '../axios/index';
+import { routeColors } from '../colors';
 
 import LoadingIndicator from '../components/LoadingIndicator.vue';
-import BusInfoCard from '../components/BusInfoCard.vue';
 
-import colors from '../colors';
-import { createBusMarker, createStationMarker } from '../utils/leaflet';
-
-export default {
-  name: 'HomeView',
-  components: {
-    VueMultiselect,
-    LoadingIndicator,
-    BusInfoCard,
-  },
-  data() {
-    return {
-      map: null,
-      routeShapes: {},
-      routeColors: {},
-      activeRoutes: [],
-      buses: {},
-      stations: {},
-      fetchBusesInterval: null,
-      selectedRoutes: [],
-      selectedBus: null,
-      busMarkerLayerGroup: null,
-      stationMarkerLayerGroup: null,
-      routeLayerGroup: null,
-      loading: true,
-    };
-  },
-  mounted() {
-    this.initializeMap();
-    this.fetchActiveRoutes();
-  },
-  unmounted() {
-    clearInterval(this.fetchBusesInterval);
-  },
-  methods: {
-    initializeMap() {
-      const map = leaflet.map('map').setView([46.0577, 14.5057], 14);
-
-      leaflet.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        minZoom: 12,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>',
-      }).addTo(map);
-
-      this.routeLayerGroup = new leaflet.LayerGroup();
-      this.routeLayerGroup.addTo(map);
-
-      this.map = map;
-    },
-    async displayStationsOnSelectedRoutes() {
-      const routes = this.selectedRoutes.filter((route) => !(route.route_number in this.stations));
-      const requests = routes.map((route) => axios.get(`route/stations-on-route?trip-id=${route.trip_id}`));
-
-      // get not yet fetched stations
-      Promise.all(requests).then((responses) => {
-        responses.forEach((res, index) => {
-          const stations = res.data.data;
-          const route = routes[index];
-          this.stations[route.route_number] = stations; // cache stations
-        });
-
-        // clear station marker layer
-        if (this.stationMarkerLayerGroup) {
-          this.map.removeLayer(this.stationMarkerLayerGroup);
-        }
-
-        // create new markers
-        const stationMarkers = [];
-        this.selectedRoutes.forEach((route) => {
-          this.stations[route.route_number].forEach((station) => {
-            const stationColor = this.routeColors[route.route_number];
-            const newStationMarker = createStationMarker(station, stationColor);
-            stationMarkers.push(newStationMarker);
-          });
-        });
-
-        // (re)create station marker layer group
-        this.stationMarkerLayerGroup = leaflet.featureGroup(stationMarkers).addTo(this.map);
-      });
-    },
-    async displaySelectedRoutes() {
-      if (this.selectedRoutes.length === 0) {
-        this.routeLayerGroup.clearLayers();
-        return;
-      }
-
-      const requests = this.selectedRoutes.reduce((prevRequests, route) => {
-        if (!(route.route_number in this.routeShapes)) {
-          prevRequests.push(axios.get(`route/routes?route-id=${route.route_id}&shape=1`));
-        }
-        return prevRequests;
-      }, []);
-
-      if (requests.length === 0) {
-        this.routeLayerGroup.clearLayers();
-        this.selectedRoutes.forEach((selectedRoute) => {
-          const routeShapeLayer = this.routeShapes[selectedRoute.route_number];
-          this.routeLayerGroup.addLayer(routeShapeLayer.addTo(this.map));
-        });
-      }
-
-      this.loading = true;
-      Promise.all(requests).then((responses) => {
-        responses.forEach((res) => {
-          const routeNumber = res.data.data[0].route_number;
-          const routeShape = res.data.data[0].geojson_shape;
-          const routeGeoJSONLayer = leaflet.geoJSON(
-            routeShape,
-            {
-              style: {
-                color: this.routeColors[routeNumber],
-                opacity: 0.65,
-              },
-            },
-          );
-          this.loading = false;
-          this.routeShapes[routeNumber] = routeGeoJSONLayer; // cache route GeoJSON
-        });
-
-        // (re)create route shape layers
-        this.routeLayerGroup.clearLayers();
-        this.selectedRoutes.forEach((selectedRoute) => {
-          const routeShapeLayer = this.routeShapes[selectedRoute.route_number];
-          this.routeLayerGroup.addLayer(routeShapeLayer.addTo(this.map));
-        });
-      }).catch((errors) => {
-        this.loading = true;
-        // TODO: handle errors
-        console.log(errors);
-      });
-    },
-    async fetchActiveRoutes() {
-      try {
-        const res = await axios.get('route/active-routes');
-        const fetchedRoutes = res.data.data;
-        const routes = [];
-        fetchedRoutes.forEach((route, index) => {
-          if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
-            routes.push(route);
-            this.routeColors[route.route_number] = colors[index] || '#aaaaaa';
-          }
-        });
-        this.activeRoutes = routes;
-        this.fetchBuses();
-        this.fetchBusesInterval = setInterval(this.fetchBuses, 5000);
-      } catch (error) {
-        this.loading = false;
-        console.log(error);
-      }
-    },
-    fetchBuses() {
-      const requests = this.activeRoutes.reduce((prevRequests, route) => {
-        if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(route.route_id)) {
-          prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
-        }
-        return prevRequests;
-      }, []);
-
-      Promise.all(requests).then((responses) => {
-        responses.forEach((res) => {
-          const fetchedBuses = res.data.data;
-          fetchedBuses.forEach((bus) => {
-            this.buses[bus.bus_name] = bus;
-          });
-        });
-        this.loading = false;
-        this.updateBusMarkers();
-      }).catch((errors) => {
-        // TODO: handle errors
-        this.loading = false;
-        console.log(errors);
-      });
-    },
-    updateBusMarkers() {
-      // clear bus marker layer
-      if (this.busMarkerLayerGroup) {
-        this.map.removeLayer(this.busMarkerLayerGroup);
-      }
-
-      // create new bus markers
-      const markers = [];
-      for (const busId in this.buses) {
-        const routeId = this.buses[busId].route_id;
-        if (this.selectedRoutes.length === 0 || this.selectedRouteIds.includes(routeId)) {
-          const busColor = this.routeColors[this.buses[busId].route_number];
-          const busMarker = createBusMarker(this.buses[busId], busColor);
-          markers.push(busMarker);
-        }
-      }
-
-      // (re)create bus marker layer group
-      this.busMarkerLayerGroup = leaflet.featureGroup(markers).on('click', (e) => {
-        const clickedMarker = e.layer;
-        this.showBusInfoCard(clickedMarker.data);
-      })
-        .on('mouseover', (e) => {
-          const marker = e.layer;
-          marker.valueOf()._icon.style.background = 'white';
-          marker.valueOf()._icon.style.filter = 'drop-shadow(0px 0px 10px #ffffff)';
-        }).on('mouseout', (e) => {
-          const marker = e.layer;
-          marker.valueOf()._icon.style.background = 'none';
-          marker.valueOf()._icon.style.filter = 'drop-shadow(0px 0px 10px #000000)';
-        })
-        .addTo(this.map);
-    },
-    showBusInfoCard(bus) {
-      this.selectedBus = bus;
-      this.map.setView([bus.latitude, bus.longitude]);
-    },
-    hideBusInfoCard() {
-      this.selectedBus = null;
-    },
-    showAllRoutes() {
-      this.selectedRoute = null;
-      this.updateBusMarkers();
-    },
-    updateSelectedBus() {
-      if (this.selectedBus) {
-        const selectedBusIsOnASelectedRoute = this.selectedRoutes.find(
-          (selectedRoute) => selectedRoute.route_id === this.selectedBus.route_id,
-        );
-        if (!selectedBusIsOnASelectedRoute) {
-          this.selectedBus = null;
-        }
-      }
-    },
-  },
-  computed: {
-    selectedRouteIds() {
-      return this.selectedRoutes.map((selectedRoute) => selectedRoute.route_id);
-    },
-  },
-  watch: {
-    selectedRoutes() {
-      this.updateBusMarkers();
-      this.displaySelectedRoutes();
-      this.displayStationsOnSelectedRoutes();
-      this.updateSelectedBus();
-    },
-  },
+const mapConfig = {
+  zoom: 14,
+  center: [46.0577, 14.5057],
+  minZoom: 3,
+  maxZoom: 18,
+  zoomAnimation: true,
 };
+
+const mapOptions = {
+  zoomSnap: 1,
+};
+
+const tilesUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>';
+
+const routeShapes = ref({});
+const activeRoutes = ref([]);
+
+const buses = ref({});
+const busMarkers = ref([]);
+const stations = ref({});
+const stationMarkers = ref([]);
+
+const selectedRoutes = ref([]);
+const fetchBusesInterval = ref(null);
+
+const loading = ref(true);
+
+const selectedRouteNumbers = computed(() => {
+  return selectedRoutes.value.map((selectedRoute) => selectedRoute.route_number);
+});
+
+const selectedRouteShapes = computed(() => {
+  return Object.keys(routeShapes.value)
+    .filter((routeNumber) => selectedRouteNumbers.value.includes(routeNumber))
+    .map((routeNumber) => {
+      const routeShape = routeShapes.value[routeNumber];
+      return {
+        ...routeShape,
+        color: routeColors[routeNumber],
+        routeNumber,
+      };
+    });
+});
+
+async function displayStationsOnSelectedRoutes() {
+  const routes = selectedRoutes.value.filter((route) => !(route.route_number in stations.value));
+  const requests = routes.map((route) => axios.get(`route/stations-on-route?trip-id=${route.trip_id}`));
+
+  const updateStationMarkers = () => {
+    stationMarkers.value = [];
+    selectedRoutes.value.forEach((route) => {
+      stations.value[route.route_number].forEach((station) => {
+        const stationColor = routeColors[route.route_number];
+        stationMarkers.value.push({
+          station,
+          color: stationColor,
+        });
+      });
+    });
+  };
+
+  if (requests.length === 0) {
+    updateStationMarkers();
+    return;
+  }
+
+  // get not yet fetched stations
+  Promise.all(requests).then((responses) => {
+    responses.forEach((res, index) => {
+      const fetchedStations = res.data.data;
+      const route = routes[index];
+      stations.value[route.route_number] = fetchedStations; // cache stations
+    });
+    updateStationMarkers();
+  });
+}
+
+async function displaySelectedRoutes() {
+  const requests = selectedRoutes.value.reduce((prevRequests, route) => {
+    if (!(route.route_number in routeShapes.value)) {
+      prevRequests.push(axios.get(`route/routes?route-id=${route.route_id}&shape=1`));
+    }
+    return prevRequests;
+  }, []);
+
+  if (requests.length === 0) {
+    return;
+  }
+
+  loading.value = true;
+  Promise.all(requests).then((responses) => {
+    responses.forEach((res) => {
+      const routeNumber = res.data.data[0].route_number;
+      const routeShape = res.data.data[0].geojson_shape;
+      loading.value = false;
+      routeShapes.value[routeNumber] = routeShape;
+    });
+  }).catch((errors) => {
+    loading.value = true;
+    // TODO: handle errors
+    console.log(errors);
+  });
+}
+
+function updateBusMarkers() {
+  // TODO: update latlng
+  busMarkers.value = [];
+  for (const busId in buses.value) {
+    const routeNumber = buses.value[busId].route_number;
+    if (selectedRoutes.value.length === 0 || selectedRouteNumbers.value.includes(routeNumber)) {
+      const bus = buses.value[busId];
+      const color = routeColors[bus.route_number];
+      busMarkers.value.push({ bus, color });
+    }
+  }
+}
+
+function fetchBuses() {
+  const requests = activeRoutes.value.reduce((prevRequests, route) => {
+    if (selectedRoutes.value.length === 0 || selectedRouteNumbers.value.includes(route.route_number)) {
+      prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
+    }
+    return prevRequests;
+  }, []);
+
+  Promise.all(requests).then((responses) => {
+    responses.forEach((res) => {
+      const fetchedBuses = res.data.data;
+      fetchedBuses.forEach((bus) => {
+        buses.value[bus.bus_name] = bus;
+      });
+    });
+    loading.value = false;
+    updateBusMarkers();
+  }).catch((errors) => {
+    // TODO: handle errors
+    loading.value = false;
+    console.log(errors);
+  });
+}
+
+async function fetchActiveRoutes() {
+  try {
+    const res = await axios.get('route/active-routes');
+    const fetchedRoutes = res.data.data;
+    const routes = [];
+    fetchedRoutes.forEach((route) => {
+      if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
+        routes.push(route);
+      }
+    });
+    activeRoutes.value = routes;
+    fetchBuses();
+    fetchBusesInterval.value = setInterval(fetchBuses, 5000);
+  } catch (error) {
+    loading.value = false;
+    // TODO: handle error
+    console.log(error);
+  }
+}
+
+onMounted(() => {
+  fetchActiveRoutes();
+});
+
+onUnmounted(() => {
+  clearInterval(fetchBusesInterval.value);
+});
+
+watch(selectedRoutes, () => {
+  updateBusMarkers();
+  displaySelectedRoutes();
+  displayStationsOnSelectedRoutes();
+});
+
 </script>
 
 <style>
+
 .bus-icon {
   filter: drop-shadow(0px 0px 10px #000000);
   border-radius: 50%;
