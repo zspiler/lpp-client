@@ -1,36 +1,32 @@
 <template>
-  <div class="card" :style="{ background: color }">
+  <div class="card" :style="{ background: props.color }">
     <div class="route-number-icon">
-      <div :style="{ color }">
-        {{ bus.route_number }}
+      <div :style="{ color: props.color }">
+        {{ props.bus.route_number }}
       </div>
     </div>
-    <h4> {{ bus.route_name }} </h4>
-    <p>To: {{ bus.destination }}</p>
+    <h4> {{ props.bus.route_name }} </h4>
+    <p>To: {{ props.bus.destination }}</p>
     <button class="close-button" @click="closeCard" />
   </div>
 </template>
 
-<script>
-export default {
-  name: 'BusInfoCard',
-  emits: ['close'],
-  props: {
-    color: {
-      type: String,
-      default: '#bbbbbb',
-    },
-    bus: {
-      type: Object,
-      required: true,
-    },
+<script setup>
+const props = defineProps({
+  color: {
+    type: String,
+    default: '#bbbbbb',
   },
-  methods: {
-    closeCard() {
-      this.$emit('close');
-    },
+  bus: {
+    type: Object,
+    required: true,
   },
-};
+});
+const emit = defineEmits(['close']);
+
+function closeCard() {
+  emit('close');
+}
 </script>
 
 <style scoped>

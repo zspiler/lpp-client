@@ -1,17 +1,14 @@
 <template>
-  <div v-if="loading" />
+  <div v-if="props.loading" />
 </template>
 
-<script>
-export default {
-  name: 'LoadingIndicator',
-  props: {
-    loading: {
-      type: Boolean,
-      required: true,
-    },
+<script setup>
+const props = defineProps({
+  loading: {
+    type: Boolean,
+    required: true,
   },
-};
+});
 </script>
 
 <style scoped>
