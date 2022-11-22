@@ -22,11 +22,9 @@
         @loaded="loading = false"
       />
       <StationMarkerLayer :selectedRoutes="selectedRoutes" />
-      <BusRouteShapesLayer :selectedRoutes="selectedRoutes" />
+      <BusRouteShapesLayer :selectedRoutes="selectedRoutes" @loading="loading = true" @loaded="loading = false" />
     </LMap>
-
-    <LoadingIndicator :loading="loading" />
-
+    <BusLoadingIndicator :loading="loading" />
   </div>
 </template>
 
@@ -41,7 +39,7 @@ import VueMultiselect from 'vue-multiselect';
 
 import axios from '../axios/index';
 
-import LoadingIndicator from '../components/LoadingIndicator.vue';
+import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusMarkerLayer from '../components/BusMarkerLayer.vue';
 import StationMarkerLayer from '../components/StationMarkerLayer.vue';
 import BusRouteShapesLayer from '../components/BusRouteShapesLayer.vue';
@@ -75,7 +73,6 @@ async function fetchActiveRoutes() {
       }
     });
     activeRoutes.value = routes;
-    console.log('set active routes!');
     loading.value = false;
   } catch (error) {
     loading.value = false;

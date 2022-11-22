@@ -23,6 +23,8 @@ const props = defineProps({
   selectedRoutes: Array.of(Object),
 });
 
+const emit = defineEmits(['loading', 'loaded']);
+
 const routeShapes = ref({});
 
 const selectedRouteNumbers = computed(() => {
@@ -54,16 +56,16 @@ async function displaySelectedRoutes() {
     return;
   }
 
-  // loading.value = true;
+  emit('loading');
   Promise.all(requests).then((responses) => {
     responses.forEach((res) => {
+      emit('loaded');
       const routeNumber = res.data.data[0].route_number;
       const routeShape = res.data.data[0].geojson_shape;
-      // loading.value = false;
       routeShapes.value[routeNumber] = routeShape;
     });
   }).catch((errors) => {
-    // loading.value = true;
+    emit('loaded');
     // TODO: handle errors
     console.log(errors);
   });
