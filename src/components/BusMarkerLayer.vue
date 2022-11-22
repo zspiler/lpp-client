@@ -37,7 +37,7 @@ const props = defineProps({
   activeRoutes: Array.of(Object),
 });
 
-const emit = defineEmits(['loading', 'loaded']);
+const emit = defineEmits(['loaded']);
 
 const buses = ref({});
 const busMarkers = ref([]);
@@ -85,7 +85,6 @@ function fetchBuses() {
 }
 
 onMounted(() => {
-  emit('loading');
   fetchBusesInterval.value = setInterval(fetchBuses, 5000);
 });
 

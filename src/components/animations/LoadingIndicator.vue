@@ -1,14 +1,38 @@
 <template>
-  <div v-if="props.loading" />
+  <div v-show="props.delayed ? showLoader : loading" />
 </template>
 
 <script setup>
+import { ref, watchEffect } from 'vue';
+
 const props = defineProps({
   loading: {
     type: Boolean,
     required: true,
   },
+  delayed: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const showLoader = ref(false);
+
+function delayLoadingAnimation() {
+  if (props.loading) {
+    setTimeout(() => {
+      if (props.loading) {
+        showLoader.value = true;
+      }
+    }, 500);
+  } else {
+    showLoader.value = false;
+  }
+}
+
+if (props.delayed) {
+  watchEffect(delayLoadingAnimation);
+}
 </script>
 
 <style scoped>
@@ -21,12 +45,10 @@ div {
   right:0;
   top:0;
   bottom:0;
-  border: 16px solid rgba(224, 238, 255, 0.5);
-  border-top: 16px solid rgba(252, 123, 123, 0.9);
+  border: 12px solid rgba(81, 81, 81, 0.5);
+  border-top: 12px solid rgba(0, 128, 0, 0.3);
   border-radius: 50%;
   animation: spin 0.75s ease-in-out infinite;
-  z-index: 9000;
-
   z-index: 9000;
 }
 
