@@ -71,7 +71,7 @@ const props = defineProps({
 .bus-loader path{
   stroke: green;
   fill: transparent;
-  animation: 2s infinite draw;
+  animation: 3s infinite draw;
   stroke-dasharray: 0;
   stroke-dasharray: 1300;
   stroke-dashoffset: 1300;

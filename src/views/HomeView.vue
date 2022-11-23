@@ -1,5 +1,5 @@
 <template>
-  <div class="map-container">
+  <div class="container">
     <VueMultiselect
       class="route-select"
       v-model="selectedRoutes"
@@ -7,30 +7,37 @@
       track-by="route_id"
       label="route_number"
       :multiple="true"
-      :disabled="loading"
+      :disabled="initialLoading"
       placeholder="Select routes to display"
       select-label=""
     />
 
-    <LMap v-bind="mapConfig">
-      <LTileLayer :url="tilesUrl" :attribution="mapTilesAttribution" />
-      <BusMarkerLayer
-        v-if="activeRoutes.length > 0"
-        :selectedRoutes="selectedRoutes"
-        :activeRoutes="activeRoutes"
-        @loading="loading = true"
-        @loaded="loading = false"
-      />
-      <StationMarkerLayer :selectedRoutes="selectedRoutes" />
-      <BusRouteShapesLayer :selectedRoutes="selectedRoutes" @loading="loading = true" @loaded="loading = false" />
-    </LMap>
-    <BusLoadingIndicator :loading="loading" />
+    <div class="map-container" :class="mapContainerClass">
+      <LMap v-bind="mapConfig">
+        <LTileLayer :url="tilesUrl" :attribution="mapTilesAttribution" />
+        <BusMarkerLayer
+          v-if="activeRoutes.length > 0"
+          :selectedRoutes="selectedRoutes"
+          :activeRoutes="activeRoutes"
+          @loaded="initialLoading = false"
+        />
+        <StationMarkerLayer :selectedRoutes="selectedRoutes" />
+        <BusRouteShapesLayer
+          :selectedRoutes="selectedRoutes"
+          @loading="loading = true"
+          @loaded="loading = false"
+        />
+      </LMap>
+    </div>
+
+    <BusLoadingIndicator :loading="initialLoading" />
+    <LoadingIndicator :loading="loading" delayed />
   </div>
 </template>
 
 <script setup>
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
@@ -39,10 +46,11 @@ import VueMultiselect from 'vue-multiselect';
 
 import axios from '../axios/index';
 
-import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusMarkerLayer from '../components/BusMarkerLayer.vue';
 import StationMarkerLayer from '../components/StationMarkerLayer.vue';
 import BusRouteShapesLayer from '../components/BusRouteShapesLayer.vue';
+import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
+import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 
 const mapConfig = {
   zoom: 14,
@@ -60,7 +68,8 @@ const mapTilesAttribution = '&copy; <a href="https://www.openstreetmap.org/copyr
 
 const activeRoutes = ref([]);
 const selectedRoutes = ref([]);
-const loading = ref(true);
+const loading = ref(false);
+const initialLoading = ref(true);
 
 async function fetchActiveRoutes() {
   try {
@@ -81,6 +90,10 @@ async function fetchActiveRoutes() {
   }
 }
 
+const mapContainerClass = computed(() => {
+  return initialLoading.value ? 'loading-map' : '';
+});
+
 onMounted(() => {
   fetchActiveRoutes();
 });
@@ -96,7 +109,12 @@ onMounted(() => {
 }
 
 .leaflet-tile-pane {
-  filter: invert(1) saturate(0%) contrast(60%) brightness(80%)
+  filter: invert(1) saturate(0%) contrast(60%) brightness(80%);
+}
+
+.loading-map {
+  filter: blur(4px) contrast(100%) ;
+  pointer-events: none;
 }
 </style>
 
@@ -111,10 +129,15 @@ onMounted(() => {
   opacity: 0;
 }
 
-.map-container {
+.container {
   height: 100vh;
   width: 100vw;
   position: relative;
+}
+
+.map-container {
+  height: 100vh;
+  width: 100vw;
 }
 
 .info-card {
