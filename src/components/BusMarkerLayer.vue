@@ -4,22 +4,16 @@
     :key="marker.bus.bus_name"
     :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
     :icon="getBusIcon(marker.bus)"
-  >
-    <LTooltip>
-      <div :style="{ color: marker.color }">
-        {{ marker.bus.route_number }}
-      </div>
-      <h4> {{ marker.bus.route_name }} </h4>
-      <p>To: {{ marker.bus.destination }}</p>
-    </LTooltip>
-  </LMarker>
+    @click="onBusClick"
+    :options="{ bus: marker.bus }"
+  />
 </template>
 
 <script setup>
 import {
   computed, ref, onMounted, onUnmounted, watch,
 } from 'vue';
-import { LTooltip, LMarker } from '@vue-leaflet/vue-leaflet';
+import { LMarker } from '@vue-leaflet/vue-leaflet';
 
 import leaflet from 'leaflet';
 
@@ -32,7 +26,7 @@ const props = defineProps({
   activeRoutes: Array.of(Object),
 });
 
-const emit = defineEmits(['loaded']);
+const emit = defineEmits(['loaded', 'clickBus']);
 
 const buses = ref({});
 const busMarkers = ref([]);
@@ -42,12 +36,17 @@ const selectedRouteIds = computed(() => {
   return props.selectedRoutes.map((selectedRoute) => selectedRoute.route_id);
 });
 
+function onBusClick(e) {
+  const bus = e.target.options.options.bus;
+  emit('clickBus', { ...bus });
+}
+
 function getBusIcon(bus) {
   const busDirection = bus.cardinal_direction;
   const svg = busDirection >= 0 && busDirection <= 180 ? busIconMirrored : busIcon;
   const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90;
 
-  const markerSize = 36;
+  const markerSize = 40;
 
   const icon = leaflet.divIcon({
     className: 'bus-icon',

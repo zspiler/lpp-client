@@ -20,6 +20,7 @@
           :selectedRoutes="selectedRoutes"
           :activeRoutes="activeRoutes"
           @loaded="initialLoading = false"
+          @clickBus="selectBus"
         />
         <StationMarkerLayer :selectedRoutes="selectedRoutes" />
         <BusRouteShapesLayer
@@ -27,6 +28,14 @@
           @loading="loading = true"
           @loaded="loading = false"
         />
+        <Transition name="bus-info-card">
+          <BusInfoCard
+            v-if="selectedBus"
+            class="info-card"
+            :bus="selectedBus"
+            @close="unselectBus"
+          />
+        </Transition>
       </LMap>
     </div>
 
@@ -37,7 +46,9 @@
 
 <script setup>
 
-import { ref, onMounted, computed } from 'vue';
+import {
+  ref, onMounted, computed, watch,
+} from 'vue';
 
 import 'leaflet/dist/leaflet.css';
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
@@ -51,8 +62,9 @@ import StationMarkerLayer from '../components/StationMarkerLayer.vue';
 import BusRouteShapesLayer from '../components/BusRouteShapesLayer.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
+import BusInfoCard from '../components/BusInfoCard.vue';
 
-const mapConfig = {
+const mapConfig = ref({
   zoom: 14,
   center: [46.0577, 14.5057],
   minZoom: 13,
@@ -60,7 +72,7 @@ const mapConfig = {
   options: {
     zoomSnap: 1,
   },
-};
+});
 
 const tilesUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const mapTilesAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>';
@@ -69,6 +81,7 @@ const activeRoutes = ref([]);
 const selectedRoutes = ref([]);
 const loading = ref(false);
 const initialLoading = ref(true);
+const selectedBus = ref(null);
 
 async function fetchActiveRoutes() {
   try {
@@ -89,12 +102,33 @@ async function fetchActiveRoutes() {
   }
 }
 
+function selectBus(bus) {
+  selectedBus.value = bus;
+  mapConfig.value.center = [bus.latitude, bus.longitude];
+}
+
+function unselectBus() {
+  selectedBus.value = null;
+}
+
 const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
 });
 
 onMounted(() => {
   fetchActiveRoutes();
+});
+
+watch(selectedRoutes, (newSelectedRoutes) => {
+  if (selectedBus.value) {
+    // unselect bus if selected bus is not on one of the selected routes
+    const selectedBusRoute = newSelectedRoutes.find((route) => {
+      return route.route_number === selectedBus.value.route_number;
+    });
+    if (selectedBusRoute === undefined) {
+      selectedBus.value = null;
+    }
+  }
 });
 </script>
 
@@ -108,7 +142,7 @@ onMounted(() => {
 }
 
 .leaflet-tile-pane {
-  filter: invert(1) saturate(0%) contrast(60%) brightness(80%);
+  filter: invert(1) saturate(0%) contrast(60%) brightness(60%);
 }
 
 .loading-map {

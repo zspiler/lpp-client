@@ -1,7 +1,7 @@
 <template>
-  <div class="card" :style="{ background: props.color }">
+  <div class="card" :style="{ background: color }">
     <div class="route-number-icon">
-      <div :style="{ color: props.color }">
+      <div :style="{ color }">
         {{ props.bus.route_number }}
       </div>
     </div>
@@ -12,17 +12,20 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { routeColors } from '../colors';
+
 const props = defineProps({
-  color: {
-    type: String,
-    default: '#bbbbbb',
-  },
   bus: {
     type: Object,
     required: true,
   },
 });
 const emit = defineEmits(['close']);
+
+const color = computed(() => {
+  return routeColors[props.bus.route_number];
+});
 
 function closeCard() {
   emit('close');
