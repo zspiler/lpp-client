@@ -6,9 +6,9 @@
     :radius="10"
     :color="marker.color"
     :fill="true"
+    :stroke="false"
     :fillColor="marker.color"
-    :fillOpacity="0.4"
-    :opacity="0.2"
+    :fillOpacity="0.6"
   >
     <LTooltip>
       <div>

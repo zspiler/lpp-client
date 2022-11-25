@@ -57,7 +57,6 @@ const mapConfig = {
   center: [46.0577, 14.5057],
   minZoom: 13,
   maxZoom: 18,
-  zoomAnimation: true,
   options: {
     zoomSnap: 1,
   },

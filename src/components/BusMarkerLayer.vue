@@ -1,36 +1,31 @@
 <template>
-  <LCircleMarker
+  <LMarker
     v-for="marker in busMarkers"
     :key="marker.bus.bus_name"
     :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
-    :radius="10"
-    :color="marker.color"
-    :fill="true"
-    :fillColor="marker.color"
-    :fillOpacity="1"
-    :opacity="0.5"
+    :icon="getBusIcon(marker.bus)"
   >
     <LTooltip>
-      <div>
-        <div :style="{ color: marker.color }">
-          {{ marker.bus.route_number }}
-        </div>
+      <div :style="{ color: marker.color }">
+        {{ marker.bus.route_number }}
       </div>
       <h4> {{ marker.bus.route_name }} </h4>
       <p>To: {{ marker.bus.destination }}</p>
     </LTooltip>
-  </LCircleMarker>
+  </LMarker>
 </template>
 
 <script setup>
 import {
   computed, ref, onMounted, onUnmounted, watch,
 } from 'vue';
-import { LCircleMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
+import { LTooltip, LMarker } from '@vue-leaflet/vue-leaflet';
+
+import leaflet from 'leaflet';
 
 import { routeColors } from '../colors';
-
 import axios from '../axios';
+import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
 
 const props = defineProps({
   selectedRoutes: Array.of(Object),
@@ -46,6 +41,23 @@ const fetchBusesInterval = ref(null);
 const selectedRouteIds = computed(() => {
   return props.selectedRoutes.map((selectedRoute) => selectedRoute.route_id);
 });
+
+function getBusIcon(bus) {
+  const busDirection = bus.cardinal_direction;
+  const svg = busDirection >= 0 && busDirection <= 180 ? busIconMirrored : busIcon;
+  const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90;
+
+  const markerSize = 36;
+
+  const icon = leaflet.divIcon({
+    className: 'bus-icon',
+    html: leaflet.Util.template(svg, { color: routeColors[bus.route_number], angle }),
+    iconSize: [markerSize, markerSize],
+    iconAnchor: [markerSize / 2, markerSize / 2],
+  });
+
+  return icon;
+}
 
 function updateBusMarkers() {
   // TODO: update latlng
