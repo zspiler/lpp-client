@@ -3,12 +3,12 @@
     v-for="marker in stationMarkers"
     :key="marker.station.name"
     :lat-lng="[marker.station.latitude, marker.station.longitude]"
-    :radius="10"
+    :radius="8"
     :color="marker.color"
     :fill="true"
     :stroke="false"
     :fillColor="marker.color"
-    :fillOpacity="0.6"
+    :fillOpacity="0.5"
   >
     <LTooltip>
       <div>
@@ -20,9 +20,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import {
-  LCircleMarker, LTooltip,
-} from '@vue-leaflet/vue-leaflet';
+import { LCircleMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
 
 import axios from '../axios/index';
 import { routeColors } from '../colors';

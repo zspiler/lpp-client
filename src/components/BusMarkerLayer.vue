@@ -37,8 +37,9 @@ const selectedRouteIds = computed(() => {
 });
 
 function onBusClick(e) {
-  const bus = e.target.options.options.bus;
-  emit('clickBus', { ...bus });
+  const busName = e.target.options.options.bus.bus_name;
+  const bus = buses.value[busName];
+  emit('clickBus', bus);
 }
 
 function getBusIcon(bus) {

@@ -1,20 +1,20 @@
 <template>
   <div class="container">
     <VueMultiselect
+      v-if="!initialLoading"
       class="route-select"
       v-model="selectedRoutes"
       :options="activeRoutes"
       track-by="route_id"
       label="route_number"
       :multiple="true"
-      :disabled="initialLoading"
       placeholder="Select routes to display"
       select-label=""
     />
 
     <div class="map-container" :class="mapContainerClass">
       <LMap v-bind="mapConfig">
-        <LTileLayer :url="tilesUrl" :attribution="mapTilesAttribution" />
+        <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
           :selectedRoutes="selectedRoutes"
@@ -74,8 +74,7 @@ const mapConfig = ref({
   },
 });
 
-const tilesUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const mapTilesAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>';
+const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`;
 
 const activeRoutes = ref([]);
 const selectedRoutes = ref([]);
@@ -134,19 +133,22 @@ watch(selectedRoutes, (newSelectedRoutes) => {
 
 <style>
 .bus-icon {
-  filter: drop-shadow(0px 0px 10px #000000);
-  border-radius: 50%;
-  height: 40px;
+  /* background: black; */
+  /* height: 60px; */
+  /* width: 60px; */
+  /* border-radius: 50%; */
+  /* filter: drop-shadow(0px 0px 10px #ffffff); */
+  /* height: 40px;
   width: 40px;
-  opacity: 0.98;
+  opacity: 0.98; */
 }
 
 .leaflet-tile-pane {
-  filter: invert(1) saturate(0%) contrast(60%) brightness(60%);
+  /* filter: invert(1) saturate(0%) contrast(80%) brightness(80%); */
 }
 
 .loading-map {
-  filter: blur(4px) contrast(100%) ;
+  filter: blur(10px) contrast(100%) ;
   pointer-events: none;
 }
 </style>
