@@ -34,7 +34,12 @@ const stationMarkers = ref([]);
 
 async function displayStationsOnSelectedRoutes() {
   const routes = props.selectedRoutes.filter((route) => !(route.route_number in stations.value));
-  const requests = routes.map((route) => axios.get(`route/stations-on-route?trip-id=${route.trip_id}`));
+  const trips = routes.reduce((acc, route) => {
+    const routeTrips = route.trips.map((trip) => ({ tripId: trip.id, routeId: route.route_id }));
+    return [...acc, ...routeTrips];
+  }, []);
+
+  const requests = trips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`));
 
   const updateStationMarkers = () => {
     stationMarkers.value = [];
@@ -58,12 +63,19 @@ async function displayStationsOnSelectedRoutes() {
   Promise.all(requests).then((responses) => {
     responses.forEach((res, index) => {
       const fetchedStations = res.data.data;
-      const route = routes[index];
-      stations.value[route.route_number] = fetchedStations; // cache stations
+      const routeId = trips[index].routeId;
+      const route = routes.find((r) => r.route_id === routeId);
+
+      if (route.route_number in stations.value) {
+        stations.value[route.route_number] = stations.value[route.route_number].concat(fetchedStations);
+      } else {
+        stations.value[route.route_number] = fetchedStations;
+      }
     });
     updateStationMarkers();
   });
 }
 
 watch(() => props.selectedRoutes, displayStationsOnSelectedRoutes);
+
 </script>

@@ -88,8 +88,22 @@ async function fetchActiveRoutes() {
     const fetchedRoutes = res.data.data;
     const routes = [];
     fetchedRoutes.forEach((route) => {
-      if (routes.length === 0 || routes[routes.length - 1].route_id !== route.route_id) {
-        routes.push(route);
+      const previousRoute = routes[routes.length - 1];
+      const trip = {
+        id: route.trip_id,
+        name: route.route_name,
+      };
+
+      if (routes.length > 0 && previousRoute.route_id === route.route_id) {
+        previousRoute.trips.push(trip);
+      } else {
+        routes.push({
+          route_id: route.route_id,
+          route_name: route.route_name,
+          route_number: route.route_number,
+          short_route_name: route.short_route_name,
+          trips: [trip],
+        });
       }
     });
     activeRoutes.value = routes;
