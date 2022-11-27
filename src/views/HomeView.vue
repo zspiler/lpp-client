@@ -3,12 +3,11 @@
     <VueMultiselect
       v-if="!initialLoading"
       class="route-select"
-      v-model="selectedRoutes"
+      v-model="selectedRoute"
       :options="activeRoutes"
       track-by="route_id"
       label="route_number"
-      :multiple="true"
-      placeholder="Select routes to display"
+      placeholder="Select route"
       select-label=""
     />
 
@@ -17,14 +16,15 @@
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
-          :selectedRoutes="selectedRoutes"
+          :selectedRoute="selectedRoute"
           :activeRoutes="activeRoutes"
           @loaded="initialLoading = false"
           @clickBus="selectBus"
         />
-        <StationMarkerLayer :selectedRoutes="selectedRoutes" />
+        <StationMarkerLayer v-if="selectedRoute" :selectedRoute="selectedRoute" />
         <BusRouteShapesLayer
-          :selectedRoutes="selectedRoutes"
+          v-if="selectedRoute"
+          :selectedRoute="selectedRoute"
           @loading="loading = true"
           @loaded="loading = false"
         />
@@ -77,7 +77,7 @@ const mapConfig = ref({
 const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`;
 
 const activeRoutes = ref([]);
-const selectedRoutes = ref([]);
+const selectedRoute = ref(null);
 const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
@@ -132,15 +132,9 @@ onMounted(() => {
   fetchActiveRoutes();
 });
 
-watch(selectedRoutes, (newSelectedRoutes) => {
-  if (selectedBus.value) {
-    // unselect bus if selected bus is not on one of the selected routes
-    const selectedBusRoute = newSelectedRoutes.find((route) => {
-      return route.route_number === selectedBus.value.route_number;
-    });
-    if (selectedBusRoute === undefined) {
-      selectedBus.value = null;
-    }
+watch(selectedRoute, (newSelectedRoute) => {
+  if (selectedBus.value && selectedBus.value.route_number !== newSelectedRoute.route_number) {
+    selectedBus.value = null;
   }
 });
 </script>

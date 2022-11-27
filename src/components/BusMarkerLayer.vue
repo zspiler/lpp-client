@@ -11,7 +11,7 @@
 
 <script setup>
 import {
-  computed, ref, onMounted, onUnmounted, watch,
+  ref, onMounted, onUnmounted, watch,
 } from 'vue';
 import { LMarker } from '@vue-leaflet/vue-leaflet';
 
@@ -22,7 +22,10 @@ import axios from '../axios';
 import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
 
 const props = defineProps({
-  selectedRoutes: Array.of(Object),
+  selectedRoute: {
+    type: Object,
+    default: null,
+  },
   activeRoutes: Array.of(Object),
 });
 
@@ -31,10 +34,6 @@ const emit = defineEmits(['loaded', 'clickBus']);
 const buses = ref({});
 const busMarkers = ref([]);
 const fetchBusesInterval = ref(null);
-
-const selectedRouteIds = computed(() => {
-  return props.selectedRoutes.map((selectedRoute) => selectedRoute.route_id);
-});
 
 function onBusClick(e) {
   const busName = e.target.options.options.bus.bus_name;
@@ -64,7 +63,7 @@ function updateBusMarkers() {
   busMarkers.value = [];
   for (const busId in buses.value) {
     const routeId = buses.value[busId].route_id;
-    if (props.selectedRoutes.length === 0 || selectedRouteIds.value.includes(routeId)) {
+    if (!props.selectedRoute || props.selectedRoute.route_id === routeId) {
       const bus = buses.value[busId];
       const color = routeColors[bus.route_number];
       busMarkers.value.push({ bus, color });
@@ -74,7 +73,7 @@ function updateBusMarkers() {
 
 function fetchBuses() {
   const requests = props.activeRoutes.reduce((prevRequests, route) => {
-    if (props.selectedRoutes.length === 0 || selectedRouteIds.value.includes(route.route_id)) {
+    if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
       prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
     }
     return prevRequests;
@@ -104,7 +103,7 @@ onUnmounted(() => {
   clearInterval(fetchBusesInterval.value);
 });
 
-watch(() => props.selectedRoutes, updateBusMarkers);
+watch(() => props.selectedRoute, updateBusMarkers);
 
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <LCircleMarker
     v-for="marker in stationMarkers"
-    :key="marker.station.name"
+    :key="marker.station.station_code"
     :lat-lng="[marker.station.latitude, marker.station.longitude]"
     :radius="8"
     :color="marker.color"
@@ -19,63 +19,70 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import {
+  ref, watch, onMounted,
+} from 'vue';
 import { LCircleMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
 
 import axios from '../axios/index';
 import { routeColors } from '../colors';
 
 const props = defineProps({
-  selectedRoutes: Array.of(Object),
+  selectedRoute: {
+    type: Object,
+    default: null,
+  },
 });
 
 const stations = ref({});
 const stationMarkers = ref([]);
 
-async function displayStationsOnSelectedRoutes() {
-  const routes = props.selectedRoutes.filter((route) => !(route.route_number in stations.value));
-  const trips = routes.reduce((acc, route) => {
-    const routeTrips = route.trips.map((trip) => ({ tripId: trip.id, routeId: route.route_id }));
-    return [...acc, ...routeTrips];
-  }, []);
+function updateStationMarkers() {
+  stationMarkers.value = [];
+  stations.value[props.selectedRoute.route_number].forEach((station) => {
+    const stationColor = routeColors[props.selectedRoute.route_number];
+    stationMarkers.value.push({
+      station,
+      color: stationColor,
+    });
+  });
+}
 
+async function fetchStationsOnSelectedRoute() {
+  const trips = props.selectedRoute.trips.map((trip) => ({ tripId: trip.id, routeId: props.selectedRoute.route_id }));
   const requests = trips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`));
 
-  const updateStationMarkers = () => {
-    stationMarkers.value = [];
-    props.selectedRoutes.forEach((route) => {
-      stations.value[route.route_number].forEach((station) => {
-        const stationColor = routeColors[route.route_number];
-        stationMarkers.value.push({
-          station,
-          color: stationColor,
-        });
-      });
-    });
-  };
-
-  if (requests.length === 0) {
-    updateStationMarkers();
-    return;
-  }
-
-  // get not yet fetched stations
   Promise.all(requests).then((responses) => {
-    responses.forEach((res, index) => {
+    responses.forEach((res) => {
       const fetchedStations = res.data.data;
-      const routeId = trips[index].routeId;
-      const route = routes.find((r) => r.route_id === routeId);
-
-      if (route.route_number in stations.value) {
-        stations.value[route.route_number] = stations.value[route.route_number].concat(fetchedStations);
+      if (props.selectedRoute.route_number in stations.value) {
+        fetchedStations.forEach((station) => {
+          // ignore repeating stations
+          const foundStation = stations.value[props.selectedRoute.route_number].find((s) => s.station_int_id === station.station_int_id);
+          if (foundStation === undefined) {
+            stations.value[props.selectedRoute.route_number].push(station);
+          }
+        });
       } else {
-        stations.value[route.route_number] = fetchedStations;
+        stations.value[props.selectedRoute.route_number] = fetchedStations;
       }
     });
     updateStationMarkers();
   });
 }
 
-watch(() => props.selectedRoutes, displayStationsOnSelectedRoutes);
+function updateStations() {
+  if (props.selectedRoute.route_number in stations.value) {
+    updateStationMarkers();
+  } else {
+    fetchStationsOnSelectedRoute();
+  }
+}
+
+onMounted(() => {
+  updateStations();
+});
+
+watch(() => props.selectedRoute, updateStations);
 
 </script>
