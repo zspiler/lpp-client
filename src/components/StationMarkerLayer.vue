@@ -30,6 +30,10 @@ import { routeColors } from '../colors';
 const props = defineProps({
   selectedRoute: {
     type: Object,
+    required: true,
+  },
+  selectedTrip: {
+    type: Object,
     default: null,
   },
 });
@@ -39,32 +43,39 @@ const stationMarkers = ref([]);
 
 function updateStationMarkers() {
   stationMarkers.value = [];
-  stations.value[props.selectedRoute.route_number].forEach((station) => {
-    const stationColor = routeColors[props.selectedRoute.route_number];
-    stationMarkers.value.push({
-      station,
-      color: stationColor,
-    });
-  });
+  stationMarkers.value = stations.value[props.selectedRoute.route_number]
+    .filter((station) => !props.selectedTrip || station.tripId === props.selectedTrip.id)
+    .reduce((acc, station) => {
+      // filter out duplicate stations
+      if (acc.find((s) => s.station.station_code === station.station_code) !== undefined) return acc;
+
+      const stationColor = routeColors[props.selectedRoute.route_number];
+      const marker = {
+        station,
+        color: stationColor,
+      };
+      acc.push(marker);
+      return acc;
+    }, []);
 }
 
 async function fetchStationsOnSelectedRoute() {
-  const trips = props.selectedRoute.trips.map((trip) => ({ tripId: trip.id, routeId: props.selectedRoute.route_id }));
-  const requests = trips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`));
+  const selectedTrips = props.selectedRoute.trips
+    .map((trip) => ({ tripId: trip.id, routeId: props.selectedRoute.route_id }))
+    .filter((trip) => !props.selectedTrip || trip.tripId === props.selectedTrip.id);
+
+  const requests = selectedTrips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`));
 
   Promise.all(requests).then((responses) => {
-    responses.forEach((res) => {
+    responses.forEach((res, index) => {
       const fetchedStations = res.data.data;
-      if (props.selectedRoute.route_number in stations.value) {
-        fetchedStations.forEach((station) => {
-          // ignore repeating stations
-          const foundStation = stations.value[props.selectedRoute.route_number].find((s) => s.station_int_id === station.station_int_id);
-          if (foundStation === undefined) {
-            stations.value[props.selectedRoute.route_number].push(station);
-          }
-        });
+      const tripId = selectedTrips[index].tripId;
+      const selectedRouteNumber = props.selectedRoute.route_number;
+
+      if (selectedRouteNumber in stations.value) {
+        stations.value[selectedRouteNumber] = stations.value[selectedRouteNumber].concat(fetchedStations.map((station) => ({ ...station, tripId })));
       } else {
-        stations.value[props.selectedRoute.route_number] = fetchedStations;
+        stations.value[selectedRouteNumber] = fetchedStations.map((station) => ({ ...station, tripId }));
       }
     });
     updateStationMarkers();
@@ -83,6 +94,6 @@ onMounted(() => {
   updateStations();
 });
 
-watch(() => props.selectedRoute, updateStations);
+watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
 
 </script>

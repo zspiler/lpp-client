@@ -1,27 +1,43 @@
 <template>
   <div class="container">
-    <VueMultiselect
-      v-if="!initialLoading"
-      class="route-select"
-      v-model="selectedRoute"
-      :options="activeRoutes"
-      track-by="route_id"
-      label="route_number"
-      placeholder="Select route"
-      select-label=""
-    />
+    <div class="dropdown-inputs">
+      <VueMultiselect
+        v-if="!initialLoading"
+        class="route-select"
+        v-model="selectedRoute"
+        :options="activeRoutes"
+        track-by="route_id"
+        label="route_number"
+        placeholder="Select route"
+        select-label=""
+      />
+
+      <Transition name="bus-info-card">
+        <VueMultiselect
+          v-if="!initialLoading && selectedRoute"
+          class="trip-select"
+          v-model="selectedTrip"
+          :options="selectedRoute.trips"
+          track-by="id"
+          label="name"
+          placeholder="Select trip"
+          select-label=""
+        />
+      </Transition>
+    </div>
 
     <div class="map-container" :class="mapContainerClass">
       <LMap v-bind="mapConfig">
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
-          :selectedRoute="selectedRoute"
           :activeRoutes="activeRoutes"
+          :selectedRoute="selectedRoute"
+          :selectedTrip="selectedTrip"
           @loaded="initialLoading = false"
           @clickBus="selectBus"
         />
-        <StationMarkerLayer v-if="selectedRoute" :selectedRoute="selectedRoute" />
+        <StationMarkerLayer v-if="selectedRoute" :selectedRoute="selectedRoute" :selectedTrip="selectedTrip" />
         <BusRouteShapesLayer
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
@@ -45,7 +61,6 @@
 </template>
 
 <script setup>
-
 import {
   ref, onMounted, computed, watch,
 } from 'vue';
@@ -78,6 +93,7 @@ const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/
 
 const activeRoutes = ref([]);
 const selectedRoute = ref(null);
+const selectedTrip = ref(null);
 const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
@@ -133,6 +149,8 @@ onMounted(() => {
 });
 
 watch(selectedRoute, (newSelectedRoute) => {
+  selectedTrip.value = null;
+
   if (selectedBus.value && selectedBus.value.route_number !== newSelectedRoute.route_number) {
     selectedBus.value = null;
   }
@@ -164,13 +182,23 @@ watch(selectedRoute, (newSelectedRoute) => {
 <style scoped>
 .bus-info-card-enter-active,
 .bus-info-card-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease;
 }
 
 .bus-info-card-enter-from,
 .bus-info-card-leave-to {
   opacity: 0;
 }
+/*
+.bus-info-card-enter-active,
+.bus-info-card-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.bus-info-card-enter-from,
+.bus-info-card-leave-to {
+  opacity: 0;
+} */
 
 .container {
   height: 100vh;
@@ -202,7 +230,7 @@ watch(selectedRoute, (newSelectedRoute) => {
   height: 100vh;
   width: 100vw;
 }
-.route-select {
+.dropdown-inputs {
   position: absolute;
   top: 5%;
   z-index: 9999;
@@ -210,5 +238,13 @@ watch(selectedRoute, (newSelectedRoute) => {
   width: 300px;
   left: 50%;
   margin-left: -150px;
+
+}
+
+.route-select {
+  text-align: center;
+}
+.trip-select {
+  text-align: center;
 }
 </style>

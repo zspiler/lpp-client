@@ -26,6 +26,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  selectedTrip: {
+    type: Object,
+    default: null,
+  },
   activeRoutes: Array.of(Object),
 });
 
@@ -63,7 +67,10 @@ function updateBusMarkers() {
   busMarkers.value = [];
   for (const busId in buses.value) {
     const routeId = buses.value[busId].route_id;
-    if (!props.selectedRoute || props.selectedRoute.route_id === routeId) {
+    const tripId = buses.value[busId].trip_id;
+
+    if ((!props.selectedRoute || props.selectedRoute.route_id === routeId)
+      && (!props.selectedTrip || props.selectedTrip.id === tripId)) {
       const bus = buses.value[busId];
       const color = routeColors[bus.route_number];
       busMarkers.value.push({ bus, color });
@@ -103,8 +110,7 @@ onUnmounted(() => {
   clearInterval(fetchBusesInterval.value);
 });
 
-watch(() => props.selectedRoute, updateBusMarkers);
-
+watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers);
 </script>
 
 <style scoped>
