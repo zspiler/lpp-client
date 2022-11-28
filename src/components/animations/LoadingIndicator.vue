@@ -38,15 +38,16 @@ if (props.delayed) {
 <style scoped>
 div {
   position: fixed;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   margin:auto;
   left:0;
   right:0;
   top:0;
   bottom:0;
-  border: 12px solid rgba(81, 81, 81, 0.5);
-  border-top: 12px solid rgba(0, 128, 0, 0.3);
+  /* border: 12px solid rgba(81, 81, 81, 0.5); */
+  border: 8px solid rgba(208, 208, 208, 0.1);
+  border-top: 8px solid rgba(0, 128, 0, 0.3);
   border-radius: 50%;
   animation: spin 0.75s ease-in-out infinite;
   z-index: 9000;

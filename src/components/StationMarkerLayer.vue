@@ -9,6 +9,8 @@
     :stroke="false"
     :fillColor="marker.color"
     :fillOpacity="0.5"
+    @click="onStationClick"
+    :options="{ station: marker.station }"
   >
     <LTooltip>
       <div>
@@ -38,8 +40,16 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['stationClick']);
+
 const stations = ref({});
 const stationMarkers = ref([]);
+
+function onStationClick(e) {
+  const stationCode = e.target.options.options.station.station_code;
+  const station = stations.value[props.selectedRoute.route_number].find((s) => s.station_code === stationCode);
+  emit('stationClick', station);
+}
 
 function updateStationMarkers() {
   stationMarkers.value = [];

@@ -12,7 +12,7 @@
         select-label=""
       />
 
-      <Transition name="bus-info-card">
+      <Transition name="fade">
         <VueMultiselect
           v-if="!initialLoading && selectedRoute"
           class="trip-select"
@@ -35,21 +35,34 @@
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
           @loaded="initialLoading = false"
-          @clickBus="selectBus"
+          @busClick="selectBus"
         />
-        <StationMarkerLayer v-if="selectedRoute" :selectedRoute="selectedRoute" :selectedTrip="selectedTrip" />
+        <StationMarkerLayer
+          v-if="selectedRoute"
+          :selectedRoute="selectedRoute"
+          :selectedTrip="selectedTrip"
+          @stationClick="selectStation"
+        />
         <BusRouteShapesLayer
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           @loading="loading = true"
           @loaded="loading = false"
         />
-        <Transition name="bus-info-card">
+        <Transition name="fade">
           <BusInfoCard
             v-if="selectedBus"
-            class="info-card"
+            class="bus-info-card"
             :bus="selectedBus"
             @close="unselectBus"
+          />
+        </Transition>
+        <Transition name="fade">
+          <StationInfoCard
+            v-if="selectedStation"
+            class="station-info-card"
+            :station="selectedStation"
+            @close="unselectStation"
           />
         </Transition>
       </LMap>
@@ -78,6 +91,7 @@ import BusRouteShapesLayer from '../components/BusRouteShapesLayer.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
+import StationInfoCard from '../components/StationInfoCard.vue';
 
 const mapConfig = ref({
   zoom: 14,
@@ -86,6 +100,7 @@ const mapConfig = ref({
   maxZoom: 18,
   options: {
     zoomSnap: 1,
+    zoomControl: false,
   },
 });
 
@@ -97,6 +112,7 @@ const selectedTrip = ref(null);
 const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
+const selectedStation = ref(null);
 
 async function fetchActiveRoutes() {
   try {
@@ -140,6 +156,15 @@ function unselectBus() {
   selectedBus.value = null;
 }
 
+function selectStation(station) {
+  selectedStation.value = station;
+  mapConfig.value.center = [station.latitude, station.longitude];
+}
+
+function unselectStation() {
+  selectedStation.value = null;
+}
+
 const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
 });
@@ -180,25 +205,15 @@ watch(selectedRoute, (newSelectedRoute) => {
 </style>
 
 <style scoped>
-.bus-info-card-enter-active,
-.bus-info-card-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
 
-.bus-info-card-enter-from,
-.bus-info-card-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
-/*
-.bus-info-card-enter-active,
-.bus-info-card-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.bus-info-card-enter-from,
-.bus-info-card-leave-to {
-  opacity: 0;
-} */
 
 .container {
   height: 100vh;
@@ -211,15 +226,24 @@ watch(selectedRoute, (newSelectedRoute) => {
   width: 100vw;
 }
 
-.info-card {
+.bus-info-card {
   position: absolute;
   top: 5%;
   right: 2%;
   margin-left: -175px;
 }
 
+.station-info-card {
+  position: absolute;
+  top: 5%;
+  left: 2%;
+  margin-right: 175px;
+  max-height: 60%;
+  overflow: hidden;
+}
+
 @media only screen and (max-width: 1000px) {
-  .info-card {
+  .bus-info-card {
     bottom: 10%;
     left: 50%;
     top: auto;
@@ -238,7 +262,6 @@ watch(selectedRoute, (newSelectedRoute) => {
   width: 300px;
   left: 50%;
   margin-left: -150px;
-
 }
 
 .route-select {

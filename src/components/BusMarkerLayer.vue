@@ -4,8 +4,8 @@
     :key="marker.bus.bus_name"
     :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
     :icon="getBusIcon(marker.bus)"
-    @click="onBusClick"
     :options="{ bus: marker.bus }"
+    @click="onBusClick"
   />
 </template>
 
@@ -33,7 +33,7 @@ const props = defineProps({
   activeRoutes: Array.of(Object),
 });
 
-const emit = defineEmits(['loaded', 'clickBus']);
+const emit = defineEmits(['loaded', 'busClick']);
 
 const buses = ref({});
 const busMarkers = ref([]);
@@ -42,7 +42,7 @@ const fetchBusesInterval = ref(null);
 function onBusClick(e) {
   const busName = e.target.options.options.bus.bus_name;
   const bus = buses.value[busName];
-  emit('clickBus', bus);
+  emit('busClick', bus);
 }
 
 function getBusIcon(bus) {
