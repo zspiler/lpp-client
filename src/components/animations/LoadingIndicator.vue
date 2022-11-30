@@ -1,5 +1,5 @@
 <template>
-  <div v-show="props.delayed ? showLoader : loading" />
+  <div :class="{ fixed: props.fixed }" v-show="props.delayed ? showLoader : loading" />
 </template>
 
 <script setup>
@@ -11,6 +11,10 @@ const props = defineProps({
     required: true,
   },
   delayed: {
+    type: Boolean,
+    default: false,
+  },
+  fixed: {
     type: Boolean,
     default: false,
   },
@@ -36,8 +40,10 @@ if (props.delayed) {
 </script>
 
 <style scoped>
-div {
+.fixed {
   position: fixed;
+}
+div {
   width: 30px;
   height: 30px;
   margin:auto;

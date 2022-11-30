@@ -57,19 +57,18 @@
             @close="unselectBus"
           />
         </Transition>
-        <Transition name="fade">
-          <StationInfoCard
-            v-if="selectedStation"
-            class="station-info-card"
-            :station="selectedStation"
-            @close="unselectStation"
-          />
-        </Transition>
       </LMap>
+      <Transition name="fade">
+        <StationInfoCard
+          v-if="selectedStation"
+          class="station-info-card"
+          :station="selectedStation"
+          @close="unselectStation"
+        />
+      </Transition>
     </div>
-
     <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loading" delayed />
+    <LoadingIndicator :loading="loading" delayed fixed />
   </div>
 </template>
 
@@ -238,8 +237,6 @@ watch(selectedRoute, (newSelectedRoute) => {
   top: 5%;
   left: 2%;
   margin-right: 175px;
-  max-height: 60%;
-  overflow: hidden;
 }
 
 @media only screen and (max-width: 1000px) {
