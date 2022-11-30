@@ -1,8 +1,5 @@
 <template>
   <div class="container">
-    Dark theme?
-    <input type="checkbox" id="checkbox" v-model="darkTheme" />
-
     <div class="dropdown-inputs">
       <VueMultiselect
         v-if="!initialLoading"
@@ -30,7 +27,7 @@
     </div>
 
     <div class="map-container" :class="mapContainerClass">
-      <LMap v-bind="mapConfig" @ready="getTileLayerElement">
+      <LMap v-bind="mapConfig" @ready="getTilePaneElement">
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
@@ -60,7 +57,11 @@
             @close="unselectBus"
           />
         </Transition>
+
       </LMap>
+      <div class="control-buttons">
+        <ThemeToggleButton />
+      </div>
       <Transition name="fade">
         <StationInfoCard
           v-if="selectedStation"
@@ -77,11 +78,11 @@
 
 <script setup>
 import {
-  ref, onMounted, computed, watch, nextTick,
+  ref, onMounted, computed, watch,
 } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
-import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
+import { LMap, LTileLayer, LControl } from '@vue-leaflet/vue-leaflet';
 
 import VueMultiselect from 'vue-multiselect';
 
@@ -94,6 +95,11 @@ import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
 import StationInfoCard from '../components/StationInfoCard.vue';
+import ThemeToggleButton from '../components/ThemeToggleButton.vue';
+
+import { useThemeStore } from '@/stores/theme';
+
+const store = useThemeStore();
 
 const mapConfig = ref({
   zoom: 14,
@@ -115,7 +121,6 @@ const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
 const selectedStation = ref(null);
-const darkTheme = ref(false);
 
 let leafletTilePane;
 
@@ -174,7 +179,7 @@ const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
 });
 
-function getTileLayerElement() {
+function getTilePaneElement() {
   leafletTilePane = document.querySelector('.leaflet-tile-pane');
 }
 
@@ -190,17 +195,24 @@ watch(selectedRoute, (newSelectedRoute) => {
   }
 });
 
-watch(darkTheme, (newDarkTheme) => {
-  if (newDarkTheme) {
+watch(() => store.darkTheme, () => {
+  if (store.darkTheme) {
     leafletTilePane.classList.add('dark-map-tiles');
   } else {
     leafletTilePane.classList.remove('dark-map-tiles');
   }
 });
-
 </script>
 
 <style>
+
+.control-buttons {
+  position: absolute;
+  bottom: 5%;
+  right: 2%;
+  margin-left: -175px;
+  z-index: 10000;
+}
 .bus-icon {
   /* background: black; */
   /* height: 60px; */
