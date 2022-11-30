@@ -1,5 +1,8 @@
 <template>
   <div class="container">
+    Dark theme?
+    <input type="checkbox" id="checkbox" v-model="darkTheme" />
+
     <div class="dropdown-inputs">
       <VueMultiselect
         v-if="!initialLoading"
@@ -27,7 +30,7 @@
     </div>
 
     <div class="map-container" :class="mapContainerClass">
-      <LMap v-bind="mapConfig">
+      <LMap v-bind="mapConfig" @ready="getTileLayerElement">
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
@@ -74,7 +77,7 @@
 
 <script setup>
 import {
-  ref, onMounted, computed, watch,
+  ref, onMounted, computed, watch, nextTick,
 } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
@@ -112,6 +115,9 @@ const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
 const selectedStation = ref(null);
+const darkTheme = ref(false);
+
+let leafletTilePane;
 
 async function fetchActiveRoutes() {
   try {
@@ -168,6 +174,10 @@ const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
 });
 
+function getTileLayerElement() {
+  leafletTilePane = document.querySelector('.leaflet-tile-pane');
+}
+
 onMounted(() => {
   fetchActiveRoutes();
 });
@@ -179,6 +189,15 @@ watch(selectedRoute, (newSelectedRoute) => {
     selectedBus.value = null;
   }
 });
+
+watch(darkTheme, (newDarkTheme) => {
+  if (newDarkTheme) {
+    leafletTilePane.classList.add('dark-map-tiles');
+  } else {
+    leafletTilePane.classList.remove('dark-map-tiles');
+  }
+});
+
 </script>
 
 <style>
@@ -193,8 +212,8 @@ watch(selectedRoute, (newSelectedRoute) => {
   opacity: 0.98; */
 }
 
-.leaflet-tile-pane {
-  /* filter: invert(1) saturate(0%) contrast(80%) brightness(80%); */
+.dark-map-tiles {
+  filter: invert(1) saturate(0%) contrast(80%) brightness(80%);
 }
 
 .loading-map {
