@@ -136,7 +136,12 @@ watch(
   z-index: 9999;
   text-align: center;
   width: 350px;
-  backdrop-filter: blur(10px) brightness(75%) saturate(120%)
+  backdrop-filter: blur(10px) brightness(75%) saturate(120%);
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 
 .eta-text {
