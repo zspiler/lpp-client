@@ -12,7 +12,7 @@
     @click="onStationClick"
     :options="{ station: marker.station }"
   >
-    <LTooltip>
+    <LTooltip :options="{ className: 'tooltip' }">
       <div>
         {{ marker.station.name }}
       </div>
@@ -105,5 +105,15 @@ onMounted(() => {
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
-
 </script>
+
+<style>
+.tooltip {
+  background: rgba(92, 92, 92, 0.65);
+  color: white;
+  font-size: 1.3em;
+  padding: 10px 30px;
+  border-radius: 1em;
+  border: none;
+}
+</style>

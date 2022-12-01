@@ -198,7 +198,7 @@ onMounted(() => {
 watch(selectedRoute, (newSelectedRoute) => {
   selectedTrip.value = null;
 
-  if (selectedBus.value && selectedBus.value.route_number !== newSelectedRoute.route_number) {
+  if (selectedBus.value && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
     selectedBus.value = null;
   }
 });
