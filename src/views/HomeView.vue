@@ -27,7 +27,7 @@
     </div>
 
     <div class="map-container" :class="mapContainerClass">
-      <LMap v-bind="mapConfig" @ready="getTilePaneElement">
+      <LMap v-bind="mapConfig" @ready="initTilePane">
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
@@ -49,15 +49,6 @@
           @loading="loading = true"
           @loaded="loading = false"
         />
-        <Transition name="fade">
-          <BusInfoCard
-            v-if="selectedBus"
-            class="bus-info-card"
-            :bus="selectedBus"
-            @close="unselectBus"
-          />
-        </Transition>
-
       </LMap>
       <div class="control-buttons">
         <ThemeToggleButton />
@@ -68,6 +59,14 @@
           class="station-info-card"
           :station="selectedStation"
           @close="unselectStation"
+        />
+      </Transition>
+      <Transition name="fade">
+        <BusInfoCard
+          v-if="selectedBus"
+          class="bus-info-card"
+          :bus="selectedBus"
+          @close="unselectBus"
         />
       </Transition>
     </div>
@@ -82,7 +81,7 @@ import {
 } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
-import { LMap, LTileLayer, LControl } from '@vue-leaflet/vue-leaflet';
+import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
 
 import VueMultiselect from 'vue-multiselect';
 
@@ -123,6 +122,10 @@ const selectedBus = ref(null);
 const selectedStation = ref(null);
 
 let leafletTilePane;
+
+const mapContainerClass = computed(() => {
+  return initialLoading.value ? 'loading-map' : '';
+});
 
 async function fetchActiveRoutes() {
   try {
@@ -175,12 +178,17 @@ function unselectStation() {
   selectedStation.value = null;
 }
 
-const mapContainerClass = computed(() => {
-  return initialLoading.value ? 'loading-map' : '';
-});
+function updateMapTheme() {
+  if (store.darkTheme) {
+    leafletTilePane.classList.add('dark-map-tiles');
+  } else {
+    leafletTilePane.classList.remove('dark-map-tiles');
+  }
+}
 
-function getTilePaneElement() {
+function initTilePane() {
   leafletTilePane = document.querySelector('.leaflet-tile-pane');
+  updateMapTheme();
 }
 
 onMounted(() => {
@@ -196,16 +204,11 @@ watch(selectedRoute, (newSelectedRoute) => {
 });
 
 watch(() => store.darkTheme, () => {
-  if (store.darkTheme) {
-    leafletTilePane.classList.add('dark-map-tiles');
-  } else {
-    leafletTilePane.classList.remove('dark-map-tiles');
-  }
+  updateMapTheme();
 });
 </script>
 
 <style>
-
 .control-buttons {
   position: absolute;
   bottom: 5%;

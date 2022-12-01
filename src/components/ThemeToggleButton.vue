@@ -32,7 +32,6 @@ import { useThemeStore } from '@/stores/theme';
 const store = useThemeStore();
 
 function toggleTheme() {
-  console.log('toggle theme!');
   store.darkTheme = !store.darkTheme;
 }
 </script>
@@ -41,13 +40,14 @@ function toggleTheme() {
 .icon-button {
     margin-top: 10%;
     margin-right: 15%;
-    height: 50px;
-    width: 50px;
+    padding: 20%;
+    height: 60px;
+    width: 60px;
     background: none;
     border: none;
     border-radius: 50%;
     color: rgb(255, 255, 255);
-    background-color: rgba(61, 61, 61, 0.5);;
+    background-color: rgba(129, 129, 129, 0.5);;
 }
 
 .dark-button {

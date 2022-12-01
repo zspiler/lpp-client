@@ -41,6 +41,7 @@ function closeCard() {
   text-align: center;
   width: 350px;
   backdrop-filter: blur(10px);
+  font-size: 0.75rem;
 }
 .route-number-icon {
   font-weight: bold;

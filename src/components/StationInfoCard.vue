@@ -120,8 +120,8 @@ watch(
   align-items: center;
 }
 .title {
-  height: 15%;
-  font-size: xx-large;
+  height: 20%;
+  font-size: x-large;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -145,7 +145,7 @@ watch(
 
 .content {
   overflow-y: hidden;
-  height: 85%;
+  height: 80%;
 }
 
 .route-icons {
