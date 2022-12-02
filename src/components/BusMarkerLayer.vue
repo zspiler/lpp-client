@@ -6,12 +6,13 @@
     :icon="getBusIcon(marker.bus)"
     :options="{ bus: marker.bus }"
     @click="onBusClick"
+    :zIndexOffset="marker.bus.bus_name === selectedBusName ? 1000 : null"
   />
 </template>
 
 <script setup>
 import {
-  ref, onMounted, onUnmounted, watch,
+  ref, onMounted, onUnmounted, watch, computed,
 } from 'vue';
 import { LMarker } from '@vue-leaflet/vue-leaflet';
 
@@ -20,6 +21,9 @@ import leaflet from 'leaflet';
 import { routeColors } from '../colors';
 import axios from '../axios';
 import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
+import { useThemeStore } from '@/stores/theme';
+
+const store = useThemeStore();
 
 const props = defineProps({
   selectedRoute: {
@@ -38,10 +42,16 @@ const emit = defineEmits(['loaded', 'busClick']);
 const buses = ref({});
 const busMarkers = ref([]);
 const fetchBusesInterval = ref(null);
+const selectedBusName = ref(null);
+
+const selectedBusClass = computed(() => {
+  return store.darkTheme ? 'selected-bus-dark' : 'selected-bus';
+});
 
 function onBusClick(e) {
   const busName = e.target.options.options.bus.bus_name;
   const bus = buses.value[busName];
+  selectedBusName.value = busName;
   emit('busClick', bus);
 }
 
@@ -53,7 +63,7 @@ function getBusIcon(bus) {
   const markerSize = 40;
 
   const icon = leaflet.divIcon({
-    className: 'bus-icon',
+    className: bus.bus_name === selectedBusName.value ? selectedBusClass : '',
     html: leaflet.Util.template(svg, { color: routeColors[bus.route_number], angle }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
@@ -111,7 +121,21 @@ onUnmounted(() => {
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers);
+watch(() => store.darkTheme, updateBusMarkers);
 </script>
 
-<style scoped>
+<style>
+.selected-bus {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  filter: contrast(100%) saturate(200%);
+}
+
+.selected-bus-dark {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0px 0px 10px #ffffff);
+}
 </style>

@@ -41,7 +41,7 @@ function closeCard() {
   text-align: center;
   width: 350px;
   backdrop-filter: blur(10px);
-  font-size: 0.75rem;
+  font-size: 1rem;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;

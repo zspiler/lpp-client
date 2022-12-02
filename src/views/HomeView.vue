@@ -216,16 +216,6 @@ watch(() => store.darkTheme, () => {
   margin-left: -175px;
   z-index: 10000;
 }
-.bus-icon {
-  /* background: black; */
-  /* height: 60px; */
-  /* width: 60px; */
-  /* border-radius: 50%; */
-  /* filter: drop-shadow(0px 0px 10px #ffffff); */
-  /* height: 40px;
-  width: 40px;
-  opacity: 0.98; */
-}
 
 .dark-map-tiles {
   filter: invert(1) saturate(0%) contrast(80%) brightness(80%);
