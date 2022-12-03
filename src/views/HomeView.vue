@@ -34,6 +34,7 @@
           :activeRoutes="activeRoutes"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
+          :selectedBus="selectedBus"
           @loaded="initialLoading = false"
           @busClick="selectBus"
         />
@@ -41,6 +42,7 @@
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
+          :selectedStation="selectedStation"
           @stationClick="selectStation"
         />
         <BusRouteShapesLayer

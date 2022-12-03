@@ -40,6 +40,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  selectedStation: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['stationClick']);
@@ -130,6 +134,13 @@ onMounted(() => {
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
+
+watch(() => props.selectedStation, () => {
+  if (!props.selectedStation) {
+    selectedStationCode.value = null;
+  }
+});
+
 </script>
 
 <style>

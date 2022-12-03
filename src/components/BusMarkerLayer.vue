@@ -35,6 +35,10 @@ const props = defineProps({
     default: null,
   },
   activeRoutes: Array.of(Object),
+  selectedBus: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['loaded', 'busClick']);
@@ -118,7 +122,14 @@ onUnmounted(() => {
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers);
+
 watch(() => store.darkTheme, updateBusMarkers);
+
+watch(() => props.selectedBus, () => {
+  if (!props.selectedBus) {
+    selectedBusName.value = null;
+  }
+});
 </script>
 
 <style>
