@@ -48,6 +48,7 @@
         <BusRouteShapesLayer
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
+          :selectedTrip="selectedTrip"
           @loading="loading = true"
           @loaded="loading = false"
         />

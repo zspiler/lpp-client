@@ -1,7 +1,7 @@
 <template>
   <LGeoJson
-    v-if="selectedRouteShape"
-    :key="selectedRouteShape.routeNumber"
+    v-for="selectedRouteShape in selectedRouteShapes"
+    :key="selectedRouteShape.tripId"
     :geojson="selectedRouteShape"
     :options="{
       style: {
@@ -14,7 +14,9 @@
 </template>
 
 <script setup>
-import { ref, watchEffect, computed } from 'vue';
+import {
+  ref, watchEffect, computed,
+} from 'vue';
 import { LGeoJson } from '@vue-leaflet/vue-leaflet';
 
 import { routeColors } from '../colors';
@@ -25,31 +27,43 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedTrip: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['loading', 'loaded']);
 
 const routeShapes = ref({});
 
-const selectedRouteShape = computed(() => {
+const selectedRouteShapes = computed(() => {
   const routeNumber = props.selectedRoute.route_number;
   if (!(routeNumber in routeShapes.value)) return null;
-  const routeShape = routeShapes.value[routeNumber];
-  return {
-    ...routeShape,
-    color: routeColors[routeNumber],
-    routeNumber,
-  };
+
+  const selectedTrips = Object.keys(routeShapes.value[routeNumber]).filter((tripId) => !props.selectedTrip || tripId === props.selectedTrip.id);
+  return selectedTrips.map((tripId) => ({ ...routeShapes.value[routeNumber][tripId], color: routeColors[routeNumber], tripId }));
 });
 
 async function fetchSelectedRoutesShape() {
-  if (props.selectedRoute.route_number in routeShapes.value) return;
   emit('loading');
   try {
     const res = await axios.get(`route/routes?route-id=${props.selectedRoute.route_id}&shape=1`);
-    const routeNumber = res.data.data[0].route_number;
-    const routeShape = res.data.data[0].geojson_shape;
-    routeShapes.value[routeNumber] = routeShape; // cache shape
+    const data = res.data.data;
+
+    data.forEach((trip) => {
+      const routeNumber = trip.route_number;
+      const tripId = trip.trip_id;
+      const routeShape = trip.geojson_shape;
+
+      if (!routeShape) return;
+
+      if (!(routeNumber in routeShapes.value)) {
+        routeShapes.value[routeNumber] = {};
+      }
+
+      routeShapes.value[routeNumber][tripId] = routeShape;
+    });
     emit('loaded');
   } catch (error) {
     emit('loaded');
@@ -58,6 +72,9 @@ async function fetchSelectedRoutesShape() {
   }
 }
 
-watchEffect(fetchSelectedRoutesShape);
+watchEffect(() => {
+  if (props.selectedRoute.route_number in routeShapes.value) return;
+  fetchSelectedRoutesShape();
+});
 
 </script>
