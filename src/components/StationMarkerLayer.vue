@@ -135,7 +135,7 @@ watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
 <style>
 .station-icon {
   background: none;
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .selected-station-icon {

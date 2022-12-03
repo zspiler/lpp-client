@@ -53,7 +53,7 @@
       <div class="control-buttons">
         <ThemeToggleButton />
       </div>
-      <Transition name="fade">
+      <Transition name="slide">
         <StationInfoCard
           v-if="selectedStation"
           class="station-info-card"
@@ -134,9 +134,11 @@ async function fetchActiveRoutes() {
     const routes = [];
     fetchedRoutes.forEach((route) => {
       const previousRoute = routes[routes.length - 1];
+
       const trip = {
         id: route.trip_id,
         name: route.route_name,
+        shortName: route.short_route_name,
       };
 
       if (routes.length > 0 && previousRoute.route_id === route.route_id) {
@@ -170,7 +172,11 @@ function unselectBus() {
 }
 
 function selectStation(station) {
+  const stationsTrip = selectedRoute.value.trips.find((trip) => trip.id === station.tripId);
+  if (!stationsTrip) return;
+
   selectedStation.value = station;
+  selectedStation.value.trip = stationsTrip;
   mapConfig.value.center = [station.latitude, station.longitude];
 }
 
@@ -238,6 +244,18 @@ watch(() => store.darkTheme, () => {
   opacity: 0;
 }
 
+.slide-enter-active,
+.slide-leave-active {
+  transition: 0.35s ease;
+}
+
+.slide-enter-from {
+  transform: translate(-100%, 0);
+}
+.slide-leave-to {
+  transform: translate(-100%, 0);
+}
+
 .container {
   height: 100vh;
   width: 100vw;
@@ -249,25 +267,20 @@ watch(() => store.darkTheme, () => {
   width: 100vw;
 }
 
-.bus-info-card {
-  position: absolute;
-  top: 5%;
-  right: 2%;
-  margin-left: -175px;
-}
-
-.station-info-card {
-  position: absolute;
-  top: 5%;
-  left: 2%;
-  margin-right: 175px;
-}
-
 @media only screen and (max-width: 1000px) {
   .bus-info-card {
     bottom: 10%;
-    left: 50%;
     top: auto;
+    left: 50%;
+    margin-left: -175px
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  .station-info-card  {
+    top: 20%;
+    left: 50%;
+    margin-left: -175px;
   }
 }
 

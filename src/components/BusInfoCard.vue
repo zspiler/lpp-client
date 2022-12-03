@@ -34,6 +34,9 @@ function closeCard() {
 
 <style scoped>
 .card {
+  position: absolute;
+  top: 5%;
+  right: 2%;
   color: white;
   opacity: 0.85;
   border-radius: 2em;

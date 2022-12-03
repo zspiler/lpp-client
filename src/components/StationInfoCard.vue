@@ -3,6 +3,9 @@
     <div class="title">
       {{ props.station.name }}
     </div>
+    <div class="subtitle">
+      To: {{ props.station.trip.shortName }}
+    </div>
     <div class="content" v-dragscroll>
       <LoadingIndicator :loading="initialLoading" delayed />
       <template v-if="!initialLoading">
@@ -120,7 +123,7 @@ watch(
   align-items: center;
 }
 .title {
-  height: 20%;
+  height: 17%;
   font-size: x-large;
   font-weight: bold;
   display: flex;
@@ -128,11 +131,21 @@ watch(
   justify-content: center;
 }
 
+.subtitle {
+  height: 8%;
+  font-size: smaller;
+}
+
 .card {
+  position: absolute;
+  top: 5%;
+  /* left: 2%; */
   height: 50%;
   z-index: 1000;
   color: white;
-  border-radius: 2em;
+
+  border-radius: 0 2em 2em 0;
+
   z-index: 9999;
   text-align: center;
   width: 350px;
@@ -144,13 +157,19 @@ watch(
   user-select: none;
 }
 
+@media only screen and (max-width: 1000px) {
+  .card {
+    height: 30%;
+  }
+}
+
 .eta-text {
   width: 60px;
 }
 
 .content {
-  overflow-y: hidden;
-  height: 80%;
+  overflow: hidden;
+  height: 75%;
 }
 
 .route-icons {
@@ -178,8 +197,6 @@ watch(
   display: flex;
   align-items: center;
   gap: 10%;
-
-  /* background: blue; */
   justify-content: space-between;
 }
 
