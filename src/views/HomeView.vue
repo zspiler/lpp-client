@@ -106,7 +106,7 @@ const store = useThemeStore();
 const mapConfig = ref({
   zoom: 14,
   center: [46.0577, 14.5057],
-  minZoom: 13,
+  minZoom: 12,
   maxZoom: 18,
   options: {
     zoomSnap: 1,

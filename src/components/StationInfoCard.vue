@@ -3,7 +3,7 @@
     <div class="title">
       {{ props.station.name }}
     </div>
-    <div class="subtitle">
+    <div v-if="props.station.trip.shortName" class="subtitle">
       To: {{ props.station.trip.shortName }}
     </div>
     <div class="content" v-dragscroll>
