@@ -91,3 +91,8 @@ xml:space="preserve">
     C362.037,240.055,365.395,243.413,369.537,243.413z" />
 </g>
 </svg>`;
+
+export const stationIcon = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" r="50" fill="{color}" />
+</svg>
+`;

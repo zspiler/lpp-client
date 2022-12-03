@@ -12,7 +12,7 @@
 
 <script setup>
 import {
-  ref, onMounted, onUnmounted, watch, computed,
+  ref, onMounted, onUnmounted, watch,
 } from 'vue';
 import { LMarker } from '@vue-leaflet/vue-leaflet';
 
@@ -44,10 +44,6 @@ const busMarkers = ref([]);
 const fetchBusesInterval = ref(null);
 const selectedBusName = ref(null);
 
-const selectedBusClass = computed(() => {
-  return store.darkTheme ? 'selected-bus-dark' : 'selected-bus';
-});
-
 function onBusClick(e) {
   const busName = e.target.options.options.bus.bus_name;
   const bus = buses.value[busName];
@@ -62,8 +58,9 @@ function getBusIcon(bus) {
 
   const markerSize = 40;
 
+  const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus';
   const icon = leaflet.divIcon({
-    className: bus.bus_name === selectedBusName.value ? selectedBusClass : '',
+    className: bus.bus_name === selectedBusName.value ? selectedIconClass : '',
     html: leaflet.Util.template(svg, { color: routeColors[bus.route_number], angle }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
@@ -127,9 +124,9 @@ watch(() => store.darkTheme, updateBusMarkers);
 <style>
 .selected-bus {
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   border: 3px solid rgba(255, 255, 255, 0.95);
-  filter: contrast(100%) saturate(200%);
+  filter: contrast(100%) saturate(150%);
 }
 
 .selected-bus-dark {

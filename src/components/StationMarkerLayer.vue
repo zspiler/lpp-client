@@ -1,33 +1,35 @@
 <template>
-  <LCircleMarker
+  <LMarker
     v-for="marker in stationMarkers"
     :key="marker.station.station_code"
     :lat-lng="[marker.station.latitude, marker.station.longitude]"
-    :radius="8"
-    :color="marker.color"
-    :fill="true"
-    :stroke="false"
-    :fillColor="marker.color"
-    :fillOpacity="0.5"
-    @click="onStationClick"
+    :icon="getMarkerIcon(marker)"
     :options="{ station: marker.station }"
+    @click="onStationClick"
+    :zIndexOffset="getStationZIndex(marker.station)"
   >
-    <LTooltip :options="{ className: 'tooltip' }">
+  <!-- Vue Leaflet Bug: can crash map when when zooming in/out -->
+    <!-- <LTooltip :options="{ className: 'tooltip' }">
       <div>
         {{ marker.station.name }}
       </div>
-    </LTooltip>
-  </LCircleMarker>
+    </LTooltip> -->
+  </LMarker>
 </template>
 
 <script setup>
 import {
   ref, watch, onMounted,
 } from 'vue';
-import { LCircleMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
+import { LMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
+import leaflet from 'leaflet';
 
 import axios from '../axios/index';
 import { routeColors } from '../colors';
+import { stationIcon } from '../assets/icons/svgIcons';
+import { useThemeStore } from '@/stores/theme';
+
+const store = useThemeStore();
 
 const props = defineProps({
   selectedRoute: {
@@ -44,10 +46,33 @@ const emit = defineEmits(['stationClick']);
 
 const stations = ref({});
 const stationMarkers = ref([]);
+const selectedStationCode = ref(null);
+
+function getStationZIndex(station) {
+  return station.station_code === selectedStationCode.value ? 1000 : null;
+}
+
+function getMarkerIcon(marker) {
+  const markerSize = 20;
+
+  const isMarkerSelected = marker.station.station_code === selectedStationCode.value;
+
+  const selectedMarkerColor = store.darkTheme ? 'white' : 'white';
+  const color = isMarkerSelected ? selectedMarkerColor : marker.color;
+  const icon = leaflet.divIcon({
+    className: isMarkerSelected ? 'selected-station-icon' : 'station-icon',
+    html: leaflet.Util.template(stationIcon, { color }),
+    iconSize: [markerSize, markerSize],
+    iconAnchor: [markerSize / 2, markerSize / 2],
+  });
+
+  return icon;
+}
 
 function onStationClick(e) {
   const stationCode = e.target.options.options.station.station_code;
   const station = stations.value[props.selectedRoute.route_number].find((s) => s.station_code === stationCode);
+  selectedStationCode.value = stationCode;
   emit('stationClick', station);
 }
 
@@ -108,6 +133,16 @@ watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
 </script>
 
 <style>
+.station-icon {
+  background: none;
+  opacity: 0.8;
+}
+
+.selected-station-icon {
+  background: none;
+  filter: drop-shadow(0px 0px 10px #ffffff);
+}
+
 .tooltip {
   background: rgba(92, 92, 92, 0.65);
   color: white;
