@@ -34,16 +34,13 @@ nav a.router-link-exact-active {
   cursor: default;
 }
 
-/* VueMultiselect customizations */
-
-.multiselect__tag {
-  background: rgb(169, 169, 237);
-}
+/* VueMultiselect */
 
 .multiselect__tag-icon::after {
   color: gray;
 }
 
 .multiselect__option--highlight {
-  background: rgb(169, 169, 237)
+  background: rgba(0, 106, 46, 0.6)
 }
+

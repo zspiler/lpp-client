@@ -3,7 +3,7 @@
     <div class="dropdown-inputs">
       <VueMultiselect
         v-if="!initialLoading"
-        class="route-select"
+        class="dropdown"
         v-model="selectedRoute"
         :options="activeRoutes"
         track-by="route_id"
@@ -15,7 +15,7 @@
       <Transition name="fade">
         <VueMultiselect
           v-if="!initialLoading && selectedRoute"
-          class="trip-select"
+          class="dropdown"
           v-model="selectedTrip"
           :options="selectedRoute.trips"
           track-by="id"
@@ -134,6 +134,7 @@ async function fetchActiveRoutes() {
     const res = await axios.get('route/active-routes');
     const fetchedRoutes = res.data.data;
     const routes = [];
+
     fetchedRoutes.forEach((route) => {
       const previousRoute = routes[routes.length - 1];
 
@@ -292,18 +293,15 @@ watch(() => store.darkTheme, () => {
 }
 .dropdown-inputs {
   position: absolute;
-  top: 5%;
+  top: 6%;
   z-index: 9999;
   text-align: center;
-  width: 300px;
   left: 50%;
-  margin-left: -150px;
+  margin-left: -175px;
+  width: 350px;
 }
 
-.route-select {
-  text-align: center;
-}
-.trip-select {
+.dropdown {
   text-align: center;
 }
 </style>
