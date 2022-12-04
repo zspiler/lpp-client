@@ -45,7 +45,7 @@
           :selectedStation="selectedStation"
           @stationClick="selectStation"
         />
-        <BusRouteShapesLayer
+        <RouteShapeLayer
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
@@ -92,7 +92,7 @@ import axios from '../axios/index';
 
 import BusMarkerLayer from '../components/BusMarkerLayer.vue';
 import StationMarkerLayer from '../components/StationMarkerLayer.vue';
-import BusRouteShapesLayer from '../components/BusRouteShapesLayer.vue';
+import RouteShapeLayer from '../components/RouteShapeLayer.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
