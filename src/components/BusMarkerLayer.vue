@@ -20,7 +20,9 @@ import leaflet from 'leaflet';
 
 import { routeColors } from '../colors';
 import axios from '../axios';
-import { busIcon, busIconMirrored } from '../assets/icons/svgIcons';
+import {
+  busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
+} from '../assets/icons/svgIcons';
 import { useThemeStore } from '@/stores/theme';
 
 const store = useThemeStore();
@@ -57,7 +59,14 @@ function onBusClick(e) {
 
 function getBusIcon(bus) {
   const busDirection = bus.cardinal_direction;
-  const svg = busDirection >= 0 && busDirection <= 180 ? busIconMirrored : busIcon;
+
+  let svg;
+  if (busDirection >= 0 && busDirection <= 180) {
+    svg = store.darkTheme ? outlinedBusIconMirrored : busIconMirrored;
+  } else {
+    svg = store.darkTheme ? outlinedBusIcon : busIcon;
+  }
+
   const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90;
 
   const markerSize = 40;
