@@ -139,16 +139,14 @@ watch(
 .card {
   position: absolute;
   top: 5%;
-  /* left: 2%; */
   height: 50%;
   z-index: 1000;
   color: white;
-
   border-radius: 0 2em 2em 0;
-
   z-index: 9999;
   text-align: center;
   width: 350px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px) brightness(75%) saturate(120%);
   -webkit-user-select: none;
   -khtml-user-select: none;

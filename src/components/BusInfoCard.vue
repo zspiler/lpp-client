@@ -43,8 +43,8 @@ function closeCard() {
   z-index: 9999;
   text-align: center;
   width: 350px;
-  backdrop-filter: blur(10px);
   font-size: 1rem;
+  filter: saturate(70%);
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
