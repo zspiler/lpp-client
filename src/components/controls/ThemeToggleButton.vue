@@ -23,13 +23,12 @@
       />
     </svg>
   </button>
-
 </template>
 
 <script setup>
-import { useThemeStore } from '@/stores/theme';
+import { usePreferencesStore } from '../../stores/preferences';
 
-const store = useThemeStore();
+const store = usePreferencesStore();
 
 function toggleTheme() {
   store.darkTheme = !store.darkTheme;
@@ -38,21 +37,21 @@ function toggleTheme() {
 
 <style scoped>
 .icon-button {
-    margin-top: 10%;
-    margin-right: 15%;
-    padding: 20%;
-    height: 60px;
-    width: 60px;
-    background: none;
-    border: none;
-    border-radius: 50%;
-    color: rgb(255, 255, 255);
-    background-color: rgba(129, 129, 129, 0.5);;
+  display: block;
+  margin-top: 10%;
+  padding: 12px;
+  height: 60px;
+  width: 60px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: rgb(255, 255, 255);
+  background-color: rgba(129, 129, 129, 0.5);
 }
 
 .dark-button {
-    background: rgba(0,0,0,0.5);
-    filter: drop-shadow(0px 0px 5px #ffffff);
+  background: rgba(0,0,0,0.5);
+  filter: drop-shadow(0px 0px 5px #ffffff);
 }
 
 </style>

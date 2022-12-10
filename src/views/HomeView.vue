@@ -29,17 +29,21 @@
     <div class="map-container" :class="mapContainerClass">
       <LMap v-bind="mapConfig" @ready="initTilePane" @update:center="onMapMove">
         <LTileLayer :url="tilesUrl" />
+        <!--  -->
+        <!-- :visible="!store.isInStationsMode" -->
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
+          :visible="(!store.isInStationsMode || !!selectedRoute)"
           :activeRoutes="activeRoutes"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
           :selectedBus="selectedBus"
-          @loaded="initialLoading = false"
           @busClick="selectBus"
+          @loadedBuses="loadingBuses = false"
+          @loadingBuses="loadingBuses = true"
         />
         <StationMarkers
-          :visible="(!selectedRoute && !selectedTrip)"
+          :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
           :location="mapCenter"
           @stationClick="selectStation"
         />
@@ -54,13 +58,11 @@
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
-          @loading="loading = true"
-          @loaded="loading = false"
+          @loading="loadingRouteShapes = true"
+          @loaded="loadingRouteShapes = false"
         />
       </LMap>
-      <div class="control-buttons">
-        <ThemeToggleButton />
-      </div>
+      <ControlButtons v-if="!initialLoading" :isModeButtonDisabled="!!selectedRoute" />
       <Transition name="slide">
         <StationInfoCard
           v-if="selectedStation"
@@ -79,7 +81,7 @@
       </Transition>
     </div>
     <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loading" delayed fixed />
+    <LoadingIndicator :loading="loadingRouteShapes" delayed fixed />
   </div>
 </template>
 
@@ -103,16 +105,16 @@ import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/BusInfoCard.vue';
 import StationInfoCard from '../components/StationInfoCard.vue';
-import ThemeToggleButton from '../components/ThemeToggleButton.vue';
+import ControlButtons from '../components/controls/ControlButtons.vue';
 
-import { useThemeStore } from '@/stores/theme';
+import { usePreferencesStore } from '@/stores/preferences';
 
-const store = useThemeStore();
+const store = usePreferencesStore();
 
 const ljubljanaCenter = { lat: 46.0577, lng: 14.5057 };
 
 const mapConfig = ref({
-  zoom: 14,
+  zoom: 15,
   center: [ljubljanaCenter.lat, ljubljanaCenter.lng],
   minZoom: 12,
   maxZoom: 18,
@@ -127,13 +129,19 @@ const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/
 const activeRoutes = ref([]);
 const selectedRoute = ref(null);
 const selectedTrip = ref(null);
-const loading = ref(false);
-const initialLoading = ref(true);
+const loadingBuses = ref(false);
+const loadingStations = ref(false);
+const loadingRouteShapes = ref(false);
+const loadingActiveRoutes = ref(true);
 const selectedBus = ref(null);
 const selectedStation = ref(null);
 const mapCenter = ref(ljubljanaCenter);
 
 let leafletTilePane;
+
+const initialLoading = computed(
+  () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || loadingBuses.value),
+);
 
 const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
@@ -167,9 +175,9 @@ async function fetchActiveRoutes() {
       }
     });
     activeRoutes.value = routes;
-    loading.value = false;
+    loadingActiveRoutes.value = false;
   } catch (error) {
-    loading.value = false;
+    loadingActiveRoutes.value = false;
     // TODO: handle error
     console.log(error);
   }
@@ -227,17 +235,14 @@ watch(selectedRoute, (newSelectedRoute) => {
 watch(() => store.darkTheme, () => {
   updateMapTheme();
 });
+
+watch(() => store.isInStationsMode, (isInStationsMode) => {
+  if (isInStationsMode) selectedBus.value = null;
+});
+
 </script>
 
 <style>
-.control-buttons {
-  position: absolute;
-  bottom: 5%;
-  right: 2%;
-  margin-left: -175px;
-  z-index: 10000;
-}
-
 .dark-map-tiles {
   filter: invert(1) saturate(0%) contrast(80%) brightness(80%);
 }

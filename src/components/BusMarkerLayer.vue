@@ -1,13 +1,15 @@
 <template>
-  <LMarker
-    v-for="marker in busMarkers"
-    :key="marker.bus.bus_name"
-    :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
-    :icon="getBusIcon(marker.bus)"
-    :options="{ bus: marker.bus }"
-    @click="onBusClick"
-    :zIndexOffset="marker.bus.bus_name === selectedBusName ? 1000 : null"
-  />
+  <div v-if="visible">
+    <LMarker
+      v-for="marker in busMarkers"
+      :key="marker.bus.bus_name"
+      :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
+      :icon="getBusIcon(marker.bus)"
+      :options="{ bus: marker.bus }"
+      @click="onBusClick"
+      :zIndexOffset="marker.bus.bus_name === selectedBusName ? 1000 : null"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -23,9 +25,9 @@ import axios from '../axios';
 import {
   busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
 } from '../assets/icons/svgIcons';
-import { useThemeStore } from '@/stores/theme';
+import { usePreferencesStore } from '@/stores/preferences';
 
-const store = useThemeStore();
+const store = usePreferencesStore();
 
 const props = defineProps({
   selectedRoute: {
@@ -41,9 +43,13 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  visible: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(['loaded', 'busClick']);
+const emit = defineEmits(['loadingBuses', 'loadedBuses', 'busClick']);
 
 const buses = ref({});
 const busMarkers = ref([]);
@@ -113,16 +119,18 @@ function fetchBuses() {
         buses.value[bus.bus_name] = bus;
       });
     });
-    emit('loaded');
+    emit('loadedBuses');
     updateBusMarkers();
   }).catch((errors) => {
-    emit('loaded');
+    emit('loadedBuses');
     // TODO: handle errors
     console.log(errors);
   });
 }
 
 onMounted(() => {
+  emit('loadingBuses');
+  fetchBuses();
   fetchBusesInterval.value = setInterval(fetchBuses, 5000);
 });
 
@@ -141,8 +149,13 @@ watch(() => props.selectedBus, () => {
 });
 </script>
 
-<style>
+<style scoped>
+div {
+  display: none;
+}
+</style>
 
+<style>
 .selected-bus {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);

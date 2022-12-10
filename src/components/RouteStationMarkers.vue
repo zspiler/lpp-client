@@ -20,9 +20,9 @@ import leaflet from 'leaflet';
 import axios from '../axios/index';
 import { routeColors } from '../colors';
 import { stationIcon } from '../assets/icons/svgIcons';
-import { useThemeStore } from '@/stores/theme';
+import { usePreferencesStore } from '@/stores/preferences';
 
-const store = useThemeStore();
+const store = usePreferencesStore();
 
 const props = defineProps({
   selectedRoute: {

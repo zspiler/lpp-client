@@ -21,11 +21,11 @@ import leaflet from 'leaflet';
 
 import axios from '../axios/index';
 import { stationIcon } from '../assets/icons/svgIcons';
-import { useThemeStore } from '@/stores/theme';
+import { usePreferencesStore } from '@/stores/preferences';
 
-const maxDistanceToStation = 3000;
+const maxDistanceToStation = 2000;
 
-const store = useThemeStore();
+const store = usePreferencesStore();
 
 const props = defineProps({
   location: {
@@ -38,19 +38,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['stationClick']);
+const emit = defineEmits(['stationClick', 'loaded']);
 
 const stationMarkers = ref([]);
 const selectedStationCode = ref(null);
 const stations = ref([]);
-
-const displayedStations = computed(() => {
-  const stationCodes = new Set();
-  stationMarkers.value.forEach((marker) => {
-    stationCodes.add(marker.station.station_code);
-  });
-  return stationCodes;
-});
 
 const nearbyStations = computed(() => {
   return stations.value.filter((station) => {
@@ -89,13 +81,14 @@ function onStationClick(e) {
 }
 
 function updateStationMarkers() {
+  const displayedStations = new Set(stationMarkers.value.map((marker) => marker.station.station_code));
+
   const newNearbyStationMarkers = nearbyStations.value
-    .filter((station) => !displayedStations.value.has(station.station_code))
+    .filter((station) => !displayedStations.has(station.station_code))
     .map((station) => {
-      const stationColor = 'rgba(100,100,100,0.5)';
       const marker = {
         station,
-        color: stationColor,
+        color: 'rgba(0, 106, 46, 0.8)',
       };
       return marker;
     });
@@ -108,6 +101,7 @@ async function fetchAllStations() {
     const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`);
     stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })));
     updateStationMarkers();
+    emit('loaded');
   } catch (error) {
     // TODO: handle error
     console.log(error);
