@@ -6,7 +6,7 @@
     :options="{
       style: {
         color: selectedRouteShape.color,
-        opacity: 0.3,
+        opacity: 0.4,
         weight: 3,
       },
     }"

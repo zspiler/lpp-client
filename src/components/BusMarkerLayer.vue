@@ -142,6 +142,7 @@ watch(() => props.selectedBus, () => {
 </script>
 
 <style>
+
 .selected-bus {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);

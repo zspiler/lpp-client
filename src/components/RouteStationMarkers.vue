@@ -7,21 +7,14 @@
     :options="{ station: marker.station }"
     @click="onStationClick"
     :zIndexOffset="getStationZIndex(marker.station)"
-  >
-  <!-- Vue Leaflet Bug: can crash map when when zooming in/out -->
-    <!-- <LTooltip :options="{ className: 'tooltip' }">
-      <div>
-        {{ marker.station.name }}
-      </div>
-    </LTooltip> -->
-  </LMarker>
+  />
 </template>
 
 <script setup>
 import {
   ref, watch, onMounted,
 } from 'vue';
-import { LMarker, LTooltip } from '@vue-leaflet/vue-leaflet';
+import { LMarker } from '@vue-leaflet/vue-leaflet';
 import leaflet from 'leaflet';
 
 import axios from '../axios/index';
@@ -152,14 +145,5 @@ watch(() => props.selectedStation, () => {
 .selected-station-icon {
   background: none;
   filter: drop-shadow(0px 0px 10px #ffffff);
-}
-
-.tooltip {
-  background: rgba(92, 92, 92, 0.65);
-  color: white;
-  font-size: 1.3em;
-  padding: 10px 30px;
-  border-radius: 1em;
-  border: none;
 }
 </style>

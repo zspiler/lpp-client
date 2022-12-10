@@ -27,7 +27,7 @@
     </div>
 
     <div class="map-container" :class="mapContainerClass">
-      <LMap v-bind="mapConfig" @ready="initTilePane">
+      <LMap v-bind="mapConfig" @ready="initTilePane" @update:center="onMapMove">
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
@@ -38,7 +38,12 @@
           @loaded="initialLoading = false"
           @busClick="selectBus"
         />
-        <StationMarkerLayer
+        <StationMarkers
+          :visible="(!selectedRoute && !selectedTrip)"
+          :location="mapCenter"
+          @stationClick="selectStation"
+        />
+        <RouteStationMarkers
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
@@ -91,7 +96,8 @@ import VueMultiselect from 'vue-multiselect';
 import axios from '../axios/index';
 
 import BusMarkerLayer from '../components/BusMarkerLayer.vue';
-import StationMarkerLayer from '../components/StationMarkerLayer.vue';
+import RouteStationMarkers from '../components/RouteStationMarkers.vue';
+import StationMarkers from '../components/StationsMarkers.vue';
 import RouteShapeLayer from '../components/RouteShapeLayer.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
@@ -103,9 +109,11 @@ import { useThemeStore } from '@/stores/theme';
 
 const store = useThemeStore();
 
+const ljubljanaCenter = { lat: 46.0577, lng: 14.5057 };
+
 const mapConfig = ref({
   zoom: 14,
-  center: [46.0577, 14.5057],
+  center: [ljubljanaCenter.lat, ljubljanaCenter.lng],
   minZoom: 12,
   maxZoom: 18,
   options: {
@@ -123,6 +131,7 @@ const loading = ref(false);
 const initialLoading = ref(true);
 const selectedBus = ref(null);
 const selectedStation = ref(null);
+const mapCenter = ref(ljubljanaCenter);
 
 let leafletTilePane;
 
@@ -176,9 +185,7 @@ function unselectBus() {
 }
 
 function selectStation(station) {
-  const stationsTrip = selectedRoute.value.trips.find((trip) => trip.id === station.tripId);
-  if (!stationsTrip) return;
-
+  const stationsTrip = selectedRoute.value?.trips.find((trip) => trip.id === station.tripId);
   selectedStation.value = station;
   selectedStation.value.trip = stationsTrip;
   mapConfig.value.center = [station.latitude, station.longitude];
@@ -199,6 +206,10 @@ function updateMapTheme() {
 function initTilePane() {
   leafletTilePane = document.querySelector('.leaflet-tile-pane');
   updateMapTheme();
+}
+
+function onMapMove(newCenter) {
+  mapCenter.value = newCenter;
 }
 
 onMounted(() => {
