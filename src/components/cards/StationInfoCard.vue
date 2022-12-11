@@ -9,8 +9,8 @@
       </div>
     </div>
     <div class="content" v-dragscroll>
-      <LoadingIndicator :loading="initialLoading" delayed />
-      <template v-if="!initialLoading">
+      <LoadingIndicator :loading="loading" delayed fixed />
+      <template v-if="!loading">
         <div v-if="(arrivals.length === 0)" class="no-arrivals-message">
           No scheduled arrivals at this moment
         </div>
@@ -67,7 +67,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['close', 'toggleSelectedRoute']);
 
-const initialLoading = ref(true);
+const loading = ref(true);
 const arrivals = ref([]);
 const fetchInterval = ref(null);
 
@@ -103,9 +103,9 @@ async function fetchArrivals() {
     });
 
     arrivals.value = arrivalsByEstimatedTime;
-    initialLoading.value = false;
+    loading.value = false;
   } catch (error) {
-    initialLoading.value = false;
+    loading.value = false;
     // TODO: handle error
     console.log(error);
   }
@@ -116,7 +116,7 @@ function selectArrival(arrival) {
 }
 
 onMounted(() => {
-  initialLoading.value = true;
+  loading.value = true;
   fetchInterval.value = setInterval(fetchArrivals, 10000);
   fetchArrivals();
 });
