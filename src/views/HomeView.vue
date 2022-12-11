@@ -43,6 +43,7 @@
         <StationMarkers
           :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
           :location="mapCenter"
+          :selectedStation="selectedStation"
           @stationClick="selectStation"
           @loadingStations="loadingStations = true"
           @loadedStations="loadingStations = false"
@@ -68,7 +69,9 @@
           v-if="selectedStation"
           class="station-info-card"
           :station="selectedStation"
+          :selectedRoute="selectedRoute"
           @close="unselectStation"
+          @toggleSelectedRoute="onToggleSelectedRoute"
         />
       </Transition>
       <Transition name="fade">
@@ -218,6 +221,17 @@ function initTilePane() {
 
 function onMapMove(newCenter) {
   mapCenter.value = newCenter;
+}
+
+function onToggleSelectedRoute(routeNumber) {
+  if (selectedRoute.value?.route_number === routeNumber) {
+    selectedRoute.value = null;
+    return;
+  }
+  const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber);
+  if (newSelectedRoute) {
+    selectedRoute.value = newSelectedRoute;
+  }
 }
 
 onMounted(() => {

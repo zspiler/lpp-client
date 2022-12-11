@@ -36,6 +36,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  selectedStation: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations']);
@@ -115,9 +119,7 @@ onMounted(() => {
 });
 
 watch(() => props.selectedStation, () => {
-  if (!props.selectedStation) {
-    selectedStationCode.value = null;
-  }
+  selectedStationCode.value = props.selectedStation?.station_code;
 });
 
 watch(() => props.location, updateStationMarkers);

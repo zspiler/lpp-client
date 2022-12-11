@@ -123,15 +123,16 @@ function updateStations() {
 }
 
 onMounted(() => {
+  if (props.selectedStation) {
+    selectedStationCode.value = props.selectedStation.station_code;
+  }
   updateStations();
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
 
 watch(() => props.selectedStation, () => {
-  if (!props.selectedStation) {
-    selectedStationCode.value = null;
-  }
+  selectedStationCode.value = props.selectedStation?.station_code;
 });
 
 </script>

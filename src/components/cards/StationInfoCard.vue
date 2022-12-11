@@ -25,7 +25,12 @@
                   v-for="arrival in arrivalGroup.arrivals"
                   :key="arrival.vehicle_id"
                   class="route-icon"
+                  :class="{
+                    'selected-route-icon': arrival.route_name === selectedRouteNumber,
+                    'non-selected-route-icon': selectedRouteNumber && arrival.route_name !== selectedRouteNumber,
+                  }"
                   :style="{ backgroundColor: routeColors[arrival.route_name] }"
+                  @click="selectArrival(arrival)"
                 >
                   {{ arrival.route_name }}
                 </span>
@@ -41,7 +46,7 @@
 
 <script setup>
 import {
-  watch, ref, onMounted, onUnmounted,
+  watch, ref, onMounted, onUnmounted, computed,
 } from 'vue';
 
 import { routeColors } from '@/colors';
@@ -55,12 +60,18 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedRoute: {
+    type: Object,
+    default: null,
+  },
 });
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'toggleSelectedRoute']);
 
 const initialLoading = ref(true);
 const arrivals = ref([]);
 const fetchInterval = ref(null);
+
+const selectedRouteNumber = computed(() => props.selectedRoute?.route_number);
 
 function closeCard() {
   emit('close');
@@ -98,6 +109,10 @@ async function fetchArrivals() {
     // TODO: handle error
     console.log(error);
   }
+}
+
+function selectArrival(arrival) {
+  emit('toggleSelectedRoute', arrival.route_name);
 }
 
 onMounted(() => {
@@ -185,12 +200,23 @@ watch(
   align-items: center;
   justify-content: center;
   text-align: center;
-  background-color: white;
   margin: 10px 3px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  opacity: 1
+  cursor: pointer;
+}
+
+.route-icon:hover {
+  filter: drop-shadow(0px 0px 2px #ffffff) saturate(120%);
+}
+
+.non-selected-route-icon {
+  filter: brightness(70%);
+}
+
+.selected-route-icon {
+  filter: drop-shadow(0px 0px 2px #ffffff) saturate(120%);
 }
 
 .arrival {
