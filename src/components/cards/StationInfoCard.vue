@@ -1,10 +1,12 @@
 <template>
   <div class="card">
-    <div class="title">
-      {{ props.station.name }}
-    </div>
-    <div v-if="props.station.trip?.shortName" class="subtitle">
-      To: {{ props.station.trip?.shortName }}
+    <div class="card-header">
+      <div>
+        {{ props.station.name }}
+      </div>
+      <div v-if="props.station.trip?.shortName" class="destination-text">
+        To: {{ props.station.trip?.shortName }}
+      </div>
     </div>
     <div class="content" v-dragscroll>
       <LoadingIndicator :loading="initialLoading" delayed />
@@ -122,18 +124,19 @@ watch(
   justify-content: center;
   align-items: center;
 }
-.title {
-  height: 17%;
+.card-header {
+  height: 23%;
   font-size: x-large;
   font-weight: bold;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
 }
 
-.subtitle {
-  height: 8%;
-  font-size: smaller;
+.destination-text {
+  font-size: small;
 }
 
 .card {
@@ -167,7 +170,7 @@ watch(
 
 .content {
   overflow: hidden;
-  height: 75%;
+  height: 77%;
 }
 
 .route-icons {
