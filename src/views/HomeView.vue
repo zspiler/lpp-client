@@ -100,10 +100,10 @@ import VueMultiselect from 'vue-multiselect';
 
 import axios from '../axios/index';
 
-import BusMarkerLayer from '../components/map-layers/BusMarkerLayer.vue';
+import BusMarkerLayer from '../components/map-layers/BusMarkers.vue';
 import RouteStationMarkers from '../components/map-layers/RouteStationMarkers.vue';
-import StationMarkers from '../components/map-layers/StationsMarkers.vue';
-import RouteShapeLayer from '../components/map-layers/RouteShapeLayer.vue';
+import StationMarkers from '../components/map-layers/StationMarkers.vue';
+import RouteShapeLayer from '../components/map-layers/RouteShapes.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/cards/BusInfoCard.vue';
