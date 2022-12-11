@@ -38,7 +38,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['stationClick', 'loaded']);
+const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations']);
 
 const stationMarkers = ref([]);
 const selectedStationCode = ref(null);
@@ -98,11 +98,13 @@ function updateStationMarkers() {
 
 async function fetchAllStations() {
   try {
+    emit('loadingStations');
     const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`);
     stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })));
     updateStationMarkers();
-    emit('loaded');
+    emit('loadedStations');
   } catch (error) {
+    emit('loadedStations');
     // TODO: handle error
     console.log(error);
   }

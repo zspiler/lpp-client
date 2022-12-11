@@ -29,8 +29,6 @@
     <div class="map-container" :class="mapContainerClass">
       <LMap v-bind="mapConfig" @ready="initTilePane" @update:center="onMapMove">
         <LTileLayer :url="tilesUrl" />
-        <!--  -->
-        <!-- :visible="!store.isInStationsMode" -->
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
           :visible="(!store.isInStationsMode || !!selectedRoute)"
@@ -39,13 +37,15 @@
           :selectedTrip="selectedTrip"
           :selectedBus="selectedBus"
           @busClick="selectBus"
-          @loadedBuses="loadingBuses = false"
           @loadingBuses="loadingBuses = true"
+          @loadedBuses="loadingBuses = false"
         />
         <StationMarkers
           :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
           :location="mapCenter"
           @stationClick="selectStation"
+          @loadingStations="loadingStations = true"
+          @loadedStations="loadingStations = false"
         />
         <RouteStationMarkers
           v-if="selectedRoute"
@@ -140,7 +140,7 @@ const mapCenter = ref(ljubljanaCenter);
 let leafletTilePane;
 
 const initialLoading = computed(
-  () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || loadingBuses.value),
+  () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || (!store.isInStationsMode && loadingBuses.value)),
 );
 
 const mapContainerClass = computed(() => {
