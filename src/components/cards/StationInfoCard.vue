@@ -42,11 +42,11 @@ import {
   watch, ref, onMounted, onUnmounted,
 } from 'vue';
 
-import { routeColors } from '../colors';
-import axios from '../axios';
-import LoadingIndicator from './animations/LoadingIndicator.vue';
+import { routeColors } from '@/colors';
+import axios from '@/axios';
+import LoadingIndicator from '../animations/LoadingIndicator.vue';
 
-import { compareRouteNumbers } from '../utils';
+import { compareRouteNumbers } from '@/utils';
 
 const props = defineProps({
   station: {

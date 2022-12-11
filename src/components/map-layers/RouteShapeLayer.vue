@@ -19,8 +19,8 @@ import {
 } from 'vue';
 import { LGeoJson } from '@vue-leaflet/vue-leaflet';
 
-import { routeColors } from '../colors';
-import axios from '../axios/index';
+import { routeColors } from '@/colors';
+import axios from '@/axios/index';
 
 const props = defineProps({
   selectedRoute: {

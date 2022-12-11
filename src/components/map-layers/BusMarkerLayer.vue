@@ -20,11 +20,11 @@ import { LMarker } from '@vue-leaflet/vue-leaflet';
 
 import leaflet from 'leaflet';
 
-import { routeColors } from '../colors';
-import axios from '../axios';
+import { routeColors } from '@/colors';
+import axios from '@/axios';
 import {
   busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
-} from '../assets/icons/svgIcons';
+} from '@/assets/icons/svgIcons';
 import { usePreferencesStore } from '@/stores/preferences';
 
 const store = usePreferencesStore();

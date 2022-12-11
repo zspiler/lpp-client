@@ -97,14 +97,14 @@ import VueMultiselect from 'vue-multiselect';
 
 import axios from '../axios/index';
 
-import BusMarkerLayer from '../components/BusMarkerLayer.vue';
-import RouteStationMarkers from '../components/RouteStationMarkers.vue';
-import StationMarkers from '../components/StationsMarkers.vue';
-import RouteShapeLayer from '../components/RouteShapeLayer.vue';
+import BusMarkerLayer from '../components/map-layers/BusMarkerLayer.vue';
+import RouteStationMarkers from '../components/map-layers/RouteStationMarkers.vue';
+import StationMarkers from '../components/map-layers/StationsMarkers.vue';
+import RouteShapeLayer from '../components/map-layers/RouteShapeLayer.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
-import BusInfoCard from '../components/BusInfoCard.vue';
-import StationInfoCard from '../components/StationInfoCard.vue';
+import BusInfoCard from '../components/cards/BusInfoCard.vue';
+import StationInfoCard from '../components/cards/StationInfoCard.vue';
 import ControlButtons from '../components/controls/ControlButtons.vue';
 
 import { usePreferencesStore } from '@/stores/preferences';

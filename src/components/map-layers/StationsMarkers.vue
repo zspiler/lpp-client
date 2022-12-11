@@ -19,8 +19,8 @@ import {
 import { LMarker } from '@vue-leaflet/vue-leaflet';
 import leaflet from 'leaflet';
 
-import axios from '../axios/index';
-import { stationIcon } from '../assets/icons/svgIcons';
+import axios from '@/axios/index';
+import { stationIcon } from '@/assets/icons/svgIcons';
 import { usePreferencesStore } from '@/stores/preferences';
 
 const maxDistanceToStation = 2000;

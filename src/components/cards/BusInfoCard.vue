@@ -13,7 +13,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { routeColors } from '../colors';
+import { routeColors } from '@/colors';
 
 const props = defineProps({
   bus: {
