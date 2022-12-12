@@ -6,9 +6,13 @@ const modes = {
   stations: 'STATIONS',
 };
 
+function userPrefersDarkTheme() {
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
 export const usePreferencesStore = defineStore('preferences', {
   state: () => ({
-    darkTheme: useStorage('darkTheme', false),
+    darkTheme: useStorage('darkTheme', userPrefersDarkTheme()),
     mode: useStorage('mode', modes.stations),
   }),
   actions: {
