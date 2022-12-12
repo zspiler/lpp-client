@@ -86,7 +86,6 @@ async function fetchArrivals() {
 
     res.data.data.arrivals.forEach((arrival) => {
       const estimatedTime = arrival.eta_min;
-      if (estimatedTime > 30) return;
       if (estimatedTime !== previousEstimatedTime) {
         arrivalsByEstimatedTime.push({
           eta: arrival.eta_min,
