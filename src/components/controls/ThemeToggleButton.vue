@@ -38,7 +38,6 @@ function toggleTheme() {
 <style scoped>
 .icon-button {
   display: block;
-  margin-top: 10%;
   padding: 12px;
   height: 60px;
   width: 60px;

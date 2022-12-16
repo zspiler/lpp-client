@@ -81,7 +81,6 @@ const debouncedToggleMode = debounce(store.toggleMode, 300, true);
 <style scoped>
 .icon-button {
   display: block;
-  margin-top: 20%;
   padding: 12px;
   height: 60px;
   width: 60px;

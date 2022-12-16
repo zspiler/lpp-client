@@ -27,7 +27,12 @@
     </div>
 
     <div class="map-container" :class="mapContainerClass">
-      <LMap v-bind="mapConfig" @ready="initTilePane" @update:center="onMapMove">
+      <LMap
+        v-bind="mapConfig"
+        @ready="initTilePane"
+        @update:center="onMapMove"
+        ref="map"
+      >
         <LTileLayer :url="tilesUrl" />
         <BusMarkerLayer
           v-if="activeRoutes.length > 0"
@@ -62,8 +67,15 @@
           @loading="loadingRouteShapes = true"
           @loaded="loadingRouteShapes = false"
         />
+        <UserLocationMarker v-if="userLocation" :location="userLocation" />
       </LMap>
-      <ControlButtons v-if="!initialLoading" :isModeButtonDisabled="!!selectedRoute" />
+
+      <div v-if="!initialLoading" class="control-buttons">
+        <ModeToggleButton :disabled="!!selectedRoute" />
+        <ThemeToggleButton />
+        <UserLocationButton @click="getUserLocation" :active="!!userLocation" />
+      </div>
+
       <Transition name="slide">
         <StationInfoCard
           v-if="selectedStation"
@@ -90,7 +102,7 @@
 
 <script setup>
 import {
-  ref, onMounted, computed, watch,
+  ref, onMounted, computed, watch, toRaw,
 } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
@@ -108,9 +120,13 @@ import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/cards/BusInfoCard.vue';
 import StationInfoCard from '../components/cards/StationInfoCard.vue';
-import ControlButtons from '../components/controls/ControlButtons.vue';
+import ThemeToggleButton from '../components/controls/ThemeToggleButton.vue';
+import ModeToggleButton from '../components/controls/ModeToggleButton.vue';
+import UserLocationButton from '../components/controls/UserLocationButton.vue';
+import UserLocationMarker from '../components/map-layers/UserLocationMarker.vue';
 
 import { usePreferencesStore } from '@/stores/preferences';
+import { useGeolocation } from '../composables/geolocation';
 
 const store = usePreferencesStore();
 
@@ -139,8 +155,12 @@ const loadingActiveRoutes = ref(true);
 const selectedBus = ref(null);
 const selectedStation = ref(null);
 const mapCenter = ref(ljubljanaCenter);
+const map = ref(null);
+const requestingLocation = ref(false);
 
 let leafletTilePane;
+
+const { userLocation } = useGeolocation(requestingLocation);
 
 const initialLoading = computed(
   () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || (!store.isInStationsMode && loadingBuses.value)),
@@ -200,6 +220,7 @@ function selectStation(station) {
   selectedStation.value = station;
   selectedStation.value.trip = stationsTrip;
   mapConfig.value.center = [station.latitude, station.longitude];
+  console.log('mapConfig.value.center to ', mapConfig.value.center);
 }
 
 function unselectStation() {
@@ -234,6 +255,27 @@ function onToggleSelectedRoute(routeNumber) {
   }
 }
 
+function focusMapOnUserLocation() {
+  const { lat, lng } = userLocation.value;
+  if (mapConfig.value.center[0] === lat && mapConfig.value.center[1] === lng) {
+    // force pan by adding random noise
+    const randomDiff = (Math.random() - 0.5) / 1000000;
+    mapConfig.value.center = [mapConfig.value.center[0] + randomDiff, mapConfig.value.center[1] + randomDiff];
+  } else {
+    mapConfig.value.center = [lat, lng];
+  }
+}
+
+function getUserLocation() {
+  if (userLocation.value) {
+    focusMapOnUserLocation();
+    return;
+  }
+
+  // TODO: handle location errors
+  requestingLocation.value = true;
+}
+
 onMounted(() => {
   fetchActiveRoutes();
 });
@@ -252,6 +294,11 @@ watch(() => store.darkTheme, () => {
 
 watch(() => store.isInStationsMode, (isInStationsMode) => {
   if (isInStationsMode) selectedBus.value = null;
+});
+
+watch(userLocation, (newUserLocation) => {
+  const { lat, lng } = newUserLocation;
+  mapConfig.value.center = [lat, lng];
 });
 
 </script>
@@ -334,5 +381,16 @@ watch(() => store.isInStationsMode, (isInStationsMode) => {
 
 .dropdown {
   text-align: center;
+}
+
+.control-buttons {
+  position: absolute;
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+  bottom: 5%;
+  right: 2%;
+  margin-left: -175px;
+  z-index: 10000;
 }
 </style>
