@@ -96,13 +96,13 @@
       </Transition>
     </div>
     <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loadingRouteShapes" delayed fixed />
+    <LoadingIndicator :loading="loadingRouteShapes || isUserLocationLoading" delayed fixed />
   </div>
 </template>
 
 <script setup>
 import {
-  ref, onMounted, computed, watch, toRaw,
+  ref, onMounted, computed, watch,
 } from 'vue';
 
 import 'leaflet/dist/leaflet.css';
@@ -160,7 +160,7 @@ const requestingLocation = ref(false);
 
 let leafletTilePane;
 
-const { userLocation } = useGeolocation(requestingLocation);
+const { userLocation, isUserLocationLoading } = useGeolocation(requestingLocation);
 
 const initialLoading = computed(
   () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || (!store.isInStationsMode && loadingBuses.value)),
