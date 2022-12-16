@@ -220,7 +220,6 @@ function selectStation(station) {
   selectedStation.value = station;
   selectedStation.value.trip = stationsTrip;
   mapConfig.value.center = [station.latitude, station.longitude];
-  console.log('mapConfig.value.center to ', mapConfig.value.center);
 }
 
 function unselectStation() {
