@@ -45,9 +45,8 @@
 </template>
 
 <script setup>
-import {
-  watch, ref, onMounted, onUnmounted, computed,
-} from 'vue';
+import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
+import { useToast } from 'vue-toastification';
 
 import { routeColors } from '@/colors';
 import axios from '@/axios';
@@ -70,6 +69,8 @@ const emit = defineEmits(['close', 'toggleSelectedRoute']);
 const loading = ref(true);
 const arrivals = ref([]);
 const fetchInterval = ref(null);
+
+const toast = useToast();
 
 const selectedRouteNumber = computed(() => props.selectedRoute?.route_number);
 
@@ -103,10 +104,10 @@ async function fetchArrivals() {
 
     arrivals.value = arrivalsByEstimatedTime;
     loading.value = false;
-  } catch (error) {
+  } catch {
+    toast.error('Error fetching arrival data');
+    clearInterval(fetchInterval.value);
     loading.value = false;
-    // TODO: handle error
-    console.log(error);
   }
 }
 

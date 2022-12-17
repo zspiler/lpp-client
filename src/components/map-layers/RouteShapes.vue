@@ -14,10 +14,9 @@
 </template>
 
 <script setup>
-import {
-  ref, watchEffect, computed,
-} from 'vue';
+import { ref, watchEffect, computed } from 'vue';
 import { LGeoJson } from '@vue-leaflet/vue-leaflet';
+import { useToast } from 'vue-toastification';
 
 import { routeColors } from '@/colors';
 import axios from '@/axios/index';
@@ -36,6 +35,8 @@ const props = defineProps({
 const emit = defineEmits(['loading', 'loaded']);
 
 const routeShapes = ref({});
+
+const toast = useToast();
 
 const selectedRouteShapes = computed(() => {
   const routeNumber = props.selectedRoute.route_number;
@@ -65,10 +66,9 @@ async function fetchSelectedRoutesShape() {
       routeShapes.value[routeNumber][tripId] = routeShape;
     });
     emit('loaded');
-  } catch (error) {
+  } catch {
+    toast.error('Error fetching route shape');
     emit('loaded');
-    // TODO: handle error
-    console.log(error);
   }
 }
 

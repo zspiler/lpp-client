@@ -109,6 +109,7 @@ import 'leaflet/dist/leaflet.css';
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
 
 import VueMultiselect from 'vue-multiselect';
+import { useToast } from 'vue-toastification';
 
 import axios from '../axios/index';
 
@@ -125,7 +126,7 @@ import ModeToggleButton from '../components/controls/ModeToggleButton.vue';
 import UserLocationButton from '../components/controls/UserLocationButton.vue';
 import UserLocationMarker from '../components/map-layers/UserLocationMarker.vue';
 
-import { usePreferencesStore } from '@/stores/preferences';
+import { usePreferencesStore } from '../stores/preferences';
 import { useGeolocation } from '../composables/geolocation';
 
 const store = usePreferencesStore();
@@ -160,7 +161,8 @@ const requestingLocation = ref(false);
 
 let leafletTilePane;
 
-const { userLocation, isUserLocationLoading } = useGeolocation(requestingLocation);
+const { userLocation, isUserLocationLoading, userLocationError } = useGeolocation(requestingLocation);
+const toast = useToast();
 
 const initialLoading = computed(
   () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || (!store.isInStationsMode && loadingBuses.value)),
@@ -199,10 +201,9 @@ async function fetchActiveRoutes() {
     });
     activeRoutes.value = routes;
     loadingActiveRoutes.value = false;
-  } catch (error) {
+  } catch {
+    toast.error('Error fetching bus routes');
     loadingActiveRoutes.value = false;
-    // TODO: handle error
-    console.log(error);
   }
 }
 
@@ -271,7 +272,11 @@ function getUserLocation() {
     return;
   }
 
-  // TODO: handle location errors
+  if (userLocationError.value && userLocationError.value.code === 1) {
+    toast.info('To display your location on the map you must allow the browser to use your location');
+    userLocation.value = undefined;
+  }
+
   requestingLocation.value = true;
 }
 

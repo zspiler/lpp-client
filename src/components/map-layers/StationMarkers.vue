@@ -18,6 +18,7 @@ import {
 } from 'vue';
 import { LMarker } from '@vue-leaflet/vue-leaflet';
 import leaflet from 'leaflet';
+import { useToast } from 'vue-toastification';
 
 import axios from '@/axios/index';
 import { stationIcon } from '@/assets/icons/svgIcons';
@@ -47,6 +48,8 @@ const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations']);
 const stationMarkers = ref([]);
 const selectedStationCode = ref(null);
 const stations = ref([]);
+
+const toast = useToast();
 
 const nearbyStations = computed(() => {
   return stations.value.filter((station) => {
@@ -107,10 +110,9 @@ async function fetchAllStations() {
     stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })));
     updateStationMarkers();
     emit('loadedStations');
-  } catch (error) {
+  } catch {
+    toast.error('Error fetching stations');
     emit('loadedStations');
-    // TODO: handle error
-    console.log(error);
   }
 }
 

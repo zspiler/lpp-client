@@ -17,8 +17,8 @@ import {
   ref, onMounted, onUnmounted, watch,
 } from 'vue';
 import { LMarker } from '@vue-leaflet/vue-leaflet';
-
 import leaflet from 'leaflet';
+import { useToast } from 'vue-toastification';
 
 import { routeColors } from '@/colors';
 import axios from '@/axios';
@@ -55,6 +55,8 @@ const buses = ref({});
 const busMarkers = ref([]);
 const fetchBusesInterval = ref(null);
 const selectedBusName = ref(null);
+
+const toast = useToast();
 
 function onBusClick(e) {
   const busName = e.target.options.options.bus.bus_name;
@@ -121,10 +123,10 @@ function fetchBuses() {
     });
     emit('loadedBuses');
     updateBusMarkers();
-  }).catch((errors) => {
+  }).catch(() => {
+    toast.error('Error fetching bus locations');
+    clearInterval(fetchBusesInterval.value);
     emit('loadedBuses');
-    // TODO: handle errors
-    console.log(errors);
   });
 }
 

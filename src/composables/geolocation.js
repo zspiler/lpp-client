@@ -12,20 +12,12 @@ export function useGeolocation(requestingLocation, geolocationOptions) {
     isUserLocationLoading.value = false;
     const { latitude, longitude } = position.coords;
     userLocation.value = { lat: latitude, lng: longitude };
+    userLocationError.value = null;
   };
 
-  const onError = (err) => {
+  const onError = (error) => {
     isUserLocationLoading.value = false;
-    console.log('error getting location');
-    console.log(err);
-    userLocationError.value = err.code;
-    // TODO: show alert
-    if (err.code === 1) {
-      // user denied location
-      userLocation.value = undefined;
-    } else {
-      // error getting location
-    }
+    userLocationError.value = error;
   };
 
   const options = unref(geolocationOptions) || {
