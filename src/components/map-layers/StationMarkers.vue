@@ -46,7 +46,7 @@ const props = defineProps({
 const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations']);
 
 const stationMarkers = ref([]);
-const selectedStationCode = ref(null);
+const selectedStation = ref(null);
 const stations = ref([]);
 
 const toast = useToast();
@@ -60,13 +60,13 @@ const nearbyStations = computed(() => {
 });
 
 function getStationZIndex(station) {
-  return station.station_code === selectedStationCode.value ? 1000 : null;
+  return station.station_code === selectedStation.value?.station_code ? 1000 : null;
 }
 
 function getMarkerIcon(marker) {
   const markerSize = 20;
 
-  const isMarkerSelected = marker.station.station_code === selectedStationCode.value;
+  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code;
 
   const selectedMarkerColor = store.darkTheme ? 'white' : 'white';
   const color = isMarkerSelected ? selectedMarkerColor : marker.color;
@@ -82,9 +82,8 @@ function getMarkerIcon(marker) {
 
 function onStationClick(e) {
   const stationCode = e.target.options.options.station.station_code;
-  const station = stations.value.find((s) => s.station_code === stationCode);
-  selectedStationCode.value = stationCode;
-  emit('stationClick', station);
+  selectedStation.value = stations.value.find((s) => s.station_code === stationCode);
+  emit('stationClick', selectedStation.value);
 }
 
 function updateStationMarkers() {
@@ -121,7 +120,7 @@ onMounted(() => {
 });
 
 watch(() => props.selectedStation, () => {
-  selectedStationCode.value = props.selectedStation?.station_code;
+  selectedStation.value = props.selectedStation;
 });
 
 watch(() => props.location, updateStationMarkers);

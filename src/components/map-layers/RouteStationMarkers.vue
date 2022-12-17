@@ -43,16 +43,16 @@ const emit = defineEmits(['stationClick']);
 
 const stations = ref({});
 const stationMarkers = ref([]);
-const selectedStationCode = ref(null);
+const selectedStation = ref(null);
 
 function getStationZIndex(station) {
-  return station.station_code === selectedStationCode.value ? 1000 : null;
+  return station.station_code === selectedStation.value?.station_code ? 1000 : null;
 }
 
 function getMarkerIcon(marker) {
   const markerSize = 20;
 
-  const isMarkerSelected = marker.station.station_code === selectedStationCode.value;
+  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code;
 
   const selectedMarkerColor = store.darkTheme ? 'white' : 'white';
   const color = isMarkerSelected ? selectedMarkerColor : marker.color;
@@ -68,9 +68,8 @@ function getMarkerIcon(marker) {
 
 function onStationClick(e) {
   const stationCode = e.target.options.options.station.station_code;
-  const station = stations.value[props.selectedRoute.route_number].find((s) => s.station_code === stationCode);
-  selectedStationCode.value = stationCode;
-  emit('stationClick', station);
+  selectedStation.value = stations.value[props.selectedRoute.route_number].find((s) => s.station_code === stationCode);
+  emit('stationClick', selectedStation.value);
 }
 
 function updateStationMarkers() {
@@ -123,16 +122,14 @@ function updateStations() {
 }
 
 onMounted(() => {
-  if (props.selectedStation) {
-    selectedStationCode.value = props.selectedStation.station_code;
-  }
+  selectedStation.value = props.selectedStation;
   updateStations();
 });
 
 watch([() => props.selectedRoute, () => props.selectedTrip], updateStations);
 
 watch(() => props.selectedStation, () => {
-  selectedStationCode.value = props.selectedStation?.station_code;
+  selectedStation.value = props.selectedStation;
 });
 
 </script>
