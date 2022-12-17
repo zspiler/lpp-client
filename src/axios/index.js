@@ -7,12 +7,13 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => {
     if ('success' in response.data && !response.data.success) {
-      return Promise.reject(response.data.message ?? 'Unknown error');
-    } 
+      const error = new Error(response.data.message ?? 'Unknown error');
+      return Promise.reject(error);
+    }
     return response;
   },
   (error) => {
-    return Promise.reject(error.message ?? 'Server error');
+    return Promise.reject(error);
   },
 );
 

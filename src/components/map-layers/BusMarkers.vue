@@ -123,10 +123,11 @@ function fetchBuses() {
     });
     emit('loadedBuses');
     updateBusMarkers();
-  }).catch(() => {
+  }).catch((errors) => {
+    emit('loadedBuses');
+    if (errors.code === 'ECONNABORTED') return;
     toast.error('Error fetching bus locations');
     clearInterval(fetchBusesInterval.value);
-    emit('loadedBuses');
   });
 }
 

@@ -34,7 +34,7 @@
         ref="map"
       >
         <LTileLayer :url="tilesUrl" />
-        <BusMarkerLayer
+        <BusMarkers
           v-if="activeRoutes.length > 0"
           :visible="(!store.isInStationsMode || !!selectedRoute)"
           :activeRoutes="activeRoutes"
@@ -43,15 +43,14 @@
           :selectedBus="selectedBus"
           @busClick="selectBus"
           @loadingBuses="loadingBuses = true"
-          @loadedBuses="loadingBuses = false"
+          @loadedBuses="onLoadedBuses"
         />
         <StationMarkers
           :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
           :location="mapCenter"
           :selectedStation="selectedStation"
           @stationClick="selectStation"
-          @loadingStations="loadingStations = true"
-          @loadedStations="loadingStations = false"
+          @loadedStations="onLoadedStations"
         />
         <RouteStationMarkers
           v-if="selectedRoute"
@@ -60,7 +59,7 @@
           :selectedStation="selectedStation"
           @stationClick="selectStation"
         />
-        <RouteShapeLayer
+        <RouteShapes
           v-if="selectedRoute"
           :selectedRoute="selectedRoute"
           :selectedTrip="selectedTrip"
@@ -96,7 +95,7 @@
       </Transition>
     </div>
     <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loadingRouteShapes || isUserLocationLoading" delayed fixed />
+    <LoadingIndicator :loading="loadingRouteShapes || isUserLocationLoading || (!initialLoading && !store.isInStationsMode && loadingBuses)" delayed fixed />
   </div>
 </template>
 
@@ -113,10 +112,10 @@ import { useToast } from 'vue-toastification';
 
 import axios from '../axios/index';
 
-import BusMarkerLayer from '../components/map-layers/BusMarkers.vue';
+import BusMarkers from '../components/map-layers/BusMarkers.vue';
 import RouteStationMarkers from '../components/map-layers/RouteStationMarkers.vue';
 import StationMarkers from '../components/map-layers/StationMarkers.vue';
-import RouteShapeLayer from '../components/map-layers/RouteShapes.vue';
+import RouteShapes from '../components/map-layers/RouteShapes.vue';
 import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
 import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
 import BusInfoCard from '../components/cards/BusInfoCard.vue';
@@ -150,7 +149,6 @@ const activeRoutes = ref([]);
 const selectedRoute = ref(null);
 const selectedTrip = ref(null);
 const loadingBuses = ref(false);
-const loadingStations = ref(false);
 const loadingRouteShapes = ref(false);
 const loadingActiveRoutes = ref(true);
 const selectedBus = ref(null);
@@ -158,15 +156,12 @@ const selectedStation = ref(null);
 const mapCenter = ref(ljubljanaCenter);
 const map = ref(null);
 const requestingLocation = ref(false);
+const initialLoading = ref(true);
 
 let leafletTilePane;
 
 const { userLocation, isUserLocationLoading, userLocationError } = useGeolocation(requestingLocation);
 const toast = useToast();
-
-const initialLoading = computed(
-  () => loadingActiveRoutes.value || ((store.isInStationsMode && loadingStations.value) || (!store.isInStationsMode && loadingBuses.value)),
-);
 
 const mapContainerClass = computed(() => {
   return initialLoading.value ? 'loading-map' : '';
@@ -278,6 +273,15 @@ function getUserLocation() {
   }
 
   requestingLocation.value = true;
+}
+
+function onLoadedBuses() {
+  if (!store.isInStationsMode) initialLoading.value = false;
+  loadingBuses.value = false;
+}
+
+function onLoadedStations() {
+  if (store.isInStationsMode) initialLoading.value = false;
 }
 
 onMounted(() => {
