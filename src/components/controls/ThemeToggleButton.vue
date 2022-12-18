@@ -26,12 +26,12 @@
 </template>
 
 <script setup>
-import { usePreferencesStore } from '../../stores/preferences';
+import { usePreferencesStore } from '../../stores/preferences'
 
-const store = usePreferencesStore();
+const store = usePreferencesStore()
 
 function toggleTheme() {
-  store.darkTheme = !store.darkTheme;
+  store.darkTheme = !store.darkTheme
 }
 </script>
 

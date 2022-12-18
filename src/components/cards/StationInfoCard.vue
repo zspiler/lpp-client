@@ -8,14 +8,14 @@
         To: {{ props.station.trip?.shortName }}
       </div>
     </div>
-    <div class="content" v-dragscroll>
+    <div v-dragscroll class="content">
       <LoadingIndicator :loading="loading" delayed fixed />
       <template v-if="!loading">
         <div v-if="(arrivals.length === 0)" class="no-arrivals-message">
           No scheduled arrivals at this moment
         </div>
         <div v-else class="arrival-list">
-          <div class="arrivals" v-for="arrivalGroup in arrivals" :key="arrivalGroup.eta">
+          <div v-for="arrivalGroup in arrivals" :key="arrivalGroup.eta" class="arrivals">
             <div class="arrival">
               <div class="eta-text">
                 {{ arrivalGroup.eta }} min
@@ -45,14 +45,15 @@
 </template>
 
 <script setup>
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
-import { useToast } from 'vue-toastification';
+import {
+  watch, ref, onMounted, onUnmounted, computed,
+} from 'vue'
+import { useToast } from 'vue-toastification'
 
-import { routeColors } from '@/colors';
-import axios from '@/axios';
-import LoadingIndicator from '../animations/LoadingIndicator.vue';
-
-import { compareRouteNumbers } from '@/utils';
+import { routeColors } from '@/colors'
+import axios from '@/axios'
+import { compareRouteNumbers } from '@/utils'
+import LoadingIndicator from '../animations/LoadingIndicator.vue'
 
 const props = defineProps({
   station: {
@@ -63,72 +64,72 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-});
-const emit = defineEmits(['close', 'toggleSelectedRoute']);
+})
+const emit = defineEmits(['close', 'toggleSelectedRoute'])
 
-const loading = ref(true);
-const arrivals = ref([]);
-const fetchInterval = ref(null);
+const loading = ref(true)
+const arrivals = ref([])
+const fetchInterval = ref(null)
 
-const toast = useToast();
+const toast = useToast()
 
-const selectedRouteNumber = computed(() => props.selectedRoute?.route_number);
+const selectedRouteNumber = computed(() => props.selectedRoute?.route_number)
 
 function closeCard() {
-  emit('close');
+  emit('close')
 }
 
 async function fetchArrivals() {
   try {
-    const res = await axios.get(`station/arrival?station-code=${props.station.station_code}`);
+    const res = await axios.get(`station/arrival?station-code=${props.station.station_code}`)
 
-    let previousEstimatedTime;
-    const arrivalsByEstimatedTime = [];
+    let previousEstimatedTime
+    const arrivalsByEstimatedTime = []
 
     res.data.data.arrivals.forEach((arrival) => {
-      const estimatedTime = arrival.eta_min;
+      const estimatedTime = arrival.eta_min
       if (estimatedTime !== previousEstimatedTime) {
         arrivalsByEstimatedTime.push({
           eta: arrival.eta_min,
           arrivals: [arrival],
-        });
-        previousEstimatedTime = estimatedTime;
+        })
+        previousEstimatedTime = estimatedTime
       } else {
-        arrivalsByEstimatedTime[arrivalsByEstimatedTime.length - 1].arrivals.push(arrival);
+        arrivalsByEstimatedTime[arrivalsByEstimatedTime.length - 1].arrivals.push(arrival)
       }
-    });
+    })
 
     arrivalsByEstimatedTime.forEach((arrivalGroup) => {
-      arrivalGroup.arrivals.sort((a, b) => compareRouteNumbers(a.route_name, b.route_name));
-    });
+      arrivalGroup.arrivals.sort((a, b) => compareRouteNumbers(a.route_name, b.route_name))
+    })
 
-    arrivals.value = arrivalsByEstimatedTime;
-    loading.value = false;
+    arrivals.value = arrivalsByEstimatedTime
+    loading.value = false
   } catch {
-    toast.error('Error fetching arrival data');
-    clearInterval(fetchInterval.value);
-    loading.value = false;
+    toast.error('Error fetching arrival data')
+    clearInterval(fetchInterval.value)
+    loading.value = false
   }
 }
 
 function selectArrival(arrival) {
-  emit('toggleSelectedRoute', arrival.route_name);
+  emit('toggleSelectedRoute', arrival.route_name)
 }
 
 onMounted(() => {
-  loading.value = true;
-  fetchInterval.value = setInterval(fetchArrivals, 10000);
-  fetchArrivals();
-});
+  loading.value = true
+  fetchInterval.value = setInterval(fetchArrivals, 10000)
+  fetchArrivals()
+})
 
 onUnmounted(() => {
-  clearInterval(fetchInterval.value);
-});
+  clearInterval(fetchInterval.value)
+})
 
 watch(
   () => props.station,
   fetchArrivals,
-);
+)
 
 </script>
 

@@ -6,8 +6,8 @@
       :lat-lng="[marker.bus.latitude, marker.bus.longitude]"
       :icon="getBusIcon(marker.bus)"
       :options="{ bus: marker.bus }"
+      :z-index-offset="marker.bus.bus_name === selectedBusName ? 1000 : null"
       @click="onBusClick"
-      :zIndexOffset="marker.bus.bus_name === selectedBusName ? 1000 : null"
     />
   </div>
 </template>
@@ -15,19 +15,19 @@
 <script setup>
 import {
   ref, onMounted, onUnmounted, watch,
-} from 'vue';
-import { LMarker } from '@vue-leaflet/vue-leaflet';
-import leaflet from 'leaflet';
-import { useToast } from 'vue-toastification';
+} from 'vue'
+import { LMarker } from '@vue-leaflet/vue-leaflet'
+import leaflet from 'leaflet'
+import { useToast } from 'vue-toastification'
 
-import { routeColors } from '@/colors';
-import axios from '@/axios';
+import { routeColors } from '@/colors'
+import axios from '@/axios'
 import {
   busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
-} from '@/assets/icons/svgIcons';
-import { usePreferencesStore } from '@/stores/preferences';
+} from '@/assets/icons/svgIcons'
+import { usePreferencesStore } from '@/stores/preferences'
 
-const store = usePreferencesStore();
+const store = usePreferencesStore()
 
 const props = defineProps({
   selectedRoute: {
@@ -47,61 +47,61 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-});
+})
 
-const emit = defineEmits(['loadingBuses', 'loadedBuses', 'busClick']);
+const emit = defineEmits(['loadingBuses', 'loadedBuses', 'busClick'])
 
-const buses = ref({});
-const busMarkers = ref([]);
-const fetchBusesInterval = ref(null);
-const selectedBusName = ref(null);
+const buses = ref({})
+const busMarkers = ref([])
+const fetchBusesInterval = ref(null)
+const selectedBusName = ref(null)
 
-const toast = useToast();
+const toast = useToast()
 
 function onBusClick(e) {
-  const busName = e.target.options.options.bus.bus_name;
-  const bus = buses.value[busName];
-  selectedBusName.value = busName;
-  emit('busClick', bus);
+  const busName = e.target.options.options.bus.bus_name
+  const bus = buses.value[busName]
+  selectedBusName.value = busName
+  emit('busClick', bus)
 }
 
 function getBusIcon(bus) {
-  const busDirection = bus.cardinal_direction;
+  const busDirection = bus.cardinal_direction
 
-  let svg;
+  let svg
   if (busDirection >= 0 && busDirection <= 180) {
-    svg = store.darkTheme ? outlinedBusIconMirrored : busIconMirrored;
+    svg = store.darkTheme ? outlinedBusIconMirrored : busIconMirrored
   } else {
-    svg = store.darkTheme ? outlinedBusIcon : busIcon;
+    svg = store.darkTheme ? outlinedBusIcon : busIcon
   }
 
-  const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90;
+  const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90
 
-  const markerSize = 40;
+  const markerSize = 40
 
-  const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus';
+  const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus'
   const icon = leaflet.divIcon({
     className: bus.bus_name === selectedBusName.value ? selectedIconClass : '',
     html: leaflet.Util.template(svg, { color: routeColors[bus.route_number], angle }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
-  });
+  })
 
-  return icon;
+  return icon
 }
 
 function updateBusMarkers() {
   // TODO: update latlng
-  busMarkers.value = [];
+  busMarkers.value = []
   for (const busId in buses.value) {
-    const routeId = buses.value[busId].route_id;
-    const tripId = buses.value[busId].trip_id;
+    const routeId = buses.value[busId].route_id
+    const tripId = buses.value[busId].trip_id
 
     if ((!props.selectedRoute || props.selectedRoute.route_id === routeId)
       && (!props.selectedTrip || props.selectedTrip.id === tripId)) {
-      const bus = buses.value[busId];
-      const color = routeColors[bus.route_number];
-      busMarkers.value.push({ bus, color });
+      const bus = buses.value[busId]
+      const color = routeColors[bus.route_number]
+      busMarkers.value.push({ bus, color })
     }
   }
 }
@@ -109,47 +109,47 @@ function updateBusMarkers() {
 function fetchBuses() {
   const requests = props.activeRoutes.reduce((prevRequests, route) => {
     if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
-      prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`));
+      prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`))
     }
-    return prevRequests;
-  }, []);
+    return prevRequests
+  }, [])
 
   Promise.all(requests).then((responses) => {
     responses.forEach((res) => {
-      const fetchedBuses = res.data.data;
+      const fetchedBuses = res.data.data
       fetchedBuses.forEach((bus) => {
-        buses.value[bus.bus_name] = bus;
-      });
-    });
-    emit('loadedBuses');
-    updateBusMarkers();
+        buses.value[bus.bus_name] = bus
+      })
+    })
+    emit('loadedBuses')
+    updateBusMarkers()
   }).catch((errors) => {
-    emit('loadedBuses');
-    if (errors.code === 'ECONNABORTED') return;
-    toast.error('Error fetching bus locations');
-    clearInterval(fetchBusesInterval.value);
-  });
+    emit('loadedBuses')
+    if (errors.code === 'ECONNABORTED') return
+    toast.error('Error fetching bus locations')
+    clearInterval(fetchBusesInterval.value)
+  })
 }
 
 onMounted(() => {
-  emit('loadingBuses');
-  fetchBuses();
-  fetchBusesInterval.value = setInterval(fetchBuses, 5000);
-});
+  emit('loadingBuses')
+  fetchBuses()
+  fetchBusesInterval.value = setInterval(fetchBuses, 5000)
+})
 
 onUnmounted(() => {
-  clearInterval(fetchBusesInterval.value);
-});
+  clearInterval(fetchBusesInterval.value)
+})
 
-watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers);
+watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers)
 
-watch(() => store.darkTheme, updateBusMarkers);
+watch(() => store.darkTheme, updateBusMarkers)
 
 watch(() => props.selectedBus, () => {
   if (!props.selectedBus) {
-    selectedBusName.value = null;
+    selectedBusName.value = null
   }
-});
+})
 </script>
 
 <style scoped>

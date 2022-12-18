@@ -12,23 +12,23 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { routeColors } from '@/colors';
+import { computed } from 'vue'
+import { routeColors } from '@/colors'
 
 const props = defineProps({
   bus: {
     type: Object,
     required: true,
   },
-});
-const emit = defineEmits(['close']);
+})
+const emit = defineEmits(['close'])
 
 const color = computed(() => {
-  return routeColors[props.bus.route_number];
-});
+  return routeColors[props.bus.route_number]
+})
 
 function closeCard() {
-  emit('close');
+  emit('close')
 }
 </script>
 

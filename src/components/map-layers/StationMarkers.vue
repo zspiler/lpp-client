@@ -6,8 +6,8 @@
       :lat-lng="[marker.station.latitude, marker.station.longitude]"
       :icon="getMarkerIcon(marker)"
       :options="{ station: marker.station }"
+      :z-index-offset="getStationZIndex(marker.station)"
       @click="onStationClick"
-      :zIndexOffset="getStationZIndex(marker.station)"
     />
   </div>
 </template>
@@ -15,18 +15,18 @@
 <script setup>
 import {
   ref, watch, onMounted, computed,
-} from 'vue';
-import { LMarker } from '@vue-leaflet/vue-leaflet';
-import leaflet from 'leaflet';
-import { useToast } from 'vue-toastification';
+} from 'vue'
+import { LMarker } from '@vue-leaflet/vue-leaflet'
+import leaflet from 'leaflet'
+import { useToast } from 'vue-toastification'
 
-import axios from '@/axios/index';
-import { stationIcon } from '@/assets/icons/svgIcons';
-import { usePreferencesStore } from '@/stores/preferences';
+import axios from '@/axios/index'
+import { stationIcon } from '@/assets/icons/svgIcons'
+import { usePreferencesStore } from '@/stores/preferences'
 
-const maxDistanceToStation = 2000;
+const maxDistanceToStation = 2000
 
-const store = usePreferencesStore();
+const store = usePreferencesStore()
 
 const props = defineProps({
   location: {
@@ -41,53 +41,54 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-});
+})
 
-const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations']);
+const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations'])
 
-const stationMarkers = ref([]);
-const selectedStation = ref(null);
-const stations = ref([]);
+const stationMarkers = ref([])
+const selectedStation = ref(null)
+const stations = ref([])
 
-const toast = useToast();
+const toast = useToast()
 
 const nearbyStations = computed(() => {
   return stations.value.filter((station) => {
-    const stationLatLng = leaflet.latLng([station.latitude, station.longitude]);
-    const locationLatLng = leaflet.latLng(props.location);
-    return stationLatLng.distanceTo(locationLatLng) < maxDistanceToStation;
-  });
-});
+    const stationLatLng = leaflet.latLng([station.latitude, station.longitude])
+    const locationLatLng = leaflet.latLng(props.location)
+    return stationLatLng.distanceTo(locationLatLng) < maxDistanceToStation
+  })
+})
 
 function getStationZIndex(station) {
-  return station.station_code === selectedStation.value?.station_code ? 1000 : null;
+  return station.station_code === selectedStation.value?.station_code ? 1000 : null
 }
 
 function getMarkerIcon(marker) {
-  const markerSize = 20;
+  const markerSize = 20
 
-  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code;
+  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code
 
-  const selectedMarkerColor = store.darkTheme ? 'white' : 'white';
-  const color = isMarkerSelected ? selectedMarkerColor : marker.color;
+  const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
+  const color = isMarkerSelected ? selectedMarkerColor : marker.color
   const icon = leaflet.divIcon({
     className: isMarkerSelected ? 'selected-station-icon fade-in-station-icon' : 'station-icon fade-in-station-icon',
     html: leaflet.Util.template(stationIcon, { color }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
-  });
+  })
 
-  return icon;
+  return icon
 }
 
 function onStationClick(e) {
-  const stationCode = e.target.options.options.station.station_code;
-  selectedStation.value = stations.value.find((s) => s.station_code === stationCode);
-  emit('stationClick', selectedStation.value);
+  const stationCode = e.target.options.options.station.station_code
+  selectedStation.value = stations.value.find((s) => s.station_code === stationCode)
+  emit('stationClick', selectedStation.value)
 }
 
 function updateStationMarkers() {
-  const displayedStations = new Set(stationMarkers.value.map((marker) => marker.station.station_code));
+  const stationCodes = stationMarkers.value.map((marker) => marker.station.station_code)
+  const displayedStations = new Set(stationCodes)
 
   const newNearbyStationMarkers = nearbyStations.value
     .filter((station) => !displayedStations.has(station.station_code))
@@ -95,35 +96,35 @@ function updateStationMarkers() {
       const marker = {
         station,
         color: 'rgba(0, 106, 46, 0.8)',
-      };
-      return marker;
-    });
+      }
+      return marker
+    })
 
-  stationMarkers.value = stationMarkers.value.concat(newNearbyStationMarkers);
+  stationMarkers.value = stationMarkers.value.concat(newNearbyStationMarkers)
 }
 
 async function fetchAllStations() {
   try {
-    emit('loadingStations');
-    const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`);
-    stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })));
-    updateStationMarkers();
-    emit('loadedStations');
+    emit('loadingStations')
+    const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`)
+    stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })))
+    updateStationMarkers()
+    emit('loadedStations')
   } catch {
-    toast.error('Error fetching stations');
-    emit('loadedStations');
+    toast.error('Error fetching stations')
+    emit('loadedStations')
   }
 }
 
 onMounted(() => {
-  fetchAllStations();
-});
+  fetchAllStations()
+})
 
 watch(() => props.selectedStation, () => {
-  selectedStation.value = props.selectedStation;
-});
+  selectedStation.value = props.selectedStation
+})
 
-watch(() => props.location, updateStationMarkers);
+watch(() => props.location, updateStationMarkers)
 
 </script>
 

@@ -68,4 +68,4 @@ export const routeColors = {
   'N3': '#6F38DD',
   'N3B': '#98BD50',
   'N5': '#aaaaaa',
-};
+}

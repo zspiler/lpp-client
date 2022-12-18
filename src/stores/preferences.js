@@ -1,13 +1,13 @@
-import { defineStore } from 'pinia';
-import { useStorage } from '@vueuse/core';
+import { defineStore } from 'pinia'
+import { useStorage } from '@vueuse/core'
 
 const modes = {
   buses: 'BUSES',
   stations: 'STATIONS',
-};
+}
 
 function userPrefersDarkTheme() {
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
 export const usePreferencesStore = defineStore('preferences', {
@@ -17,10 +17,10 @@ export const usePreferencesStore = defineStore('preferences', {
   }),
   actions: {
     toggleMode() {
-      this.mode = this.mode === modes.buses ? modes.stations : modes.buses;
+      this.mode = this.mode === modes.buses ? modes.stations : modes.buses
     },
   },
   getters: {
     isInStationsMode: (state) => state.mode === modes.stations,
   },
-});
+})

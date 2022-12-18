@@ -2,26 +2,26 @@
   <LMarker
     :lat-lng="[location.lat, location.lng]"
     :icon="getMarkerIcon()"
-    :zIndexOffset="10000"
+    :z-index-offset="10000"
   />
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { LMarker } from '@vue-leaflet/vue-leaflet';
-import leaflet from 'leaflet';
+import { computed } from 'vue'
+import { LMarker } from '@vue-leaflet/vue-leaflet'
+import leaflet from 'leaflet'
 
 const props = defineProps({
   location: {
     type: Object,
     required: true,
   },
-});
+})
 
-const location = computed(() => props.location);
+const location = computed(() => props.location)
 
 function getMarkerIcon() {
-  const markerSize = 25;
+  const markerSize = 25
 
   const svg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
        <defs>
@@ -35,16 +35,16 @@ function getMarkerIcon() {
           </linearGradient>
         </defs>
         <circle cx="50" cy="50" r="50" fill="url('#myGradient')" />
-       </svg>`;
+       </svg>`
 
   const icon = leaflet.divIcon({
     className: 'user-marker',
     html: svg,
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
-  });
+  })
 
-  return icon;
+  return icon
 }
 </script>
 

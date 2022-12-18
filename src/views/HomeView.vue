@@ -3,8 +3,8 @@
     <div class="dropdown-inputs">
       <VueMultiselect
         v-if="!initialLoading"
-        class="dropdown"
         v-model="selectedRoute"
+        class="dropdown"
         :options="activeRoutes"
         track-by="route_id"
         label="route_number"
@@ -15,8 +15,8 @@
       <Transition name="fade">
         <VueMultiselect
           v-if="!initialLoading && selectedRoute"
-          class="dropdown"
           v-model="selectedTrip"
+          class="dropdown"
           :options="selectedRoute.trips"
           track-by="id"
           label="name"
@@ -29,40 +29,40 @@
     <div class="map-container" :class="mapContainerClass">
       <LMap
         v-bind="mapConfig"
+        ref="map"
         @ready="initTilePane"
         @update:center="onMapMove"
-        ref="map"
       >
         <LTileLayer :url="tilesUrl" />
         <BusMarkers
           v-if="activeRoutes.length > 0"
           :visible="(!store.isInStationsMode || !!selectedRoute)"
-          :activeRoutes="activeRoutes"
-          :selectedRoute="selectedRoute"
-          :selectedTrip="selectedTrip"
-          :selectedBus="selectedBus"
-          @busClick="selectBus"
-          @loadingBuses="loadingBuses = true"
-          @loadedBuses="onLoadedBuses"
+          :active-routes="activeRoutes"
+          :selected-route="selectedRoute"
+          :selected-trip="selectedTrip"
+          :selected-bus="selectedBus"
+          @bus-click="selectBus"
+          @loading-buses="onLoadingBuses"
+          @loaded-buses="onLoadedBuses"
         />
         <StationMarkers
           :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
           :location="mapCenter"
-          :selectedStation="selectedStation"
-          @stationClick="selectStation"
-          @loadedStations="onLoadedStations"
+          :selected-station="selectedStation"
+          @station-click="selectStation"
+          @loaded-stations="onLoadedStations"
         />
         <RouteStationMarkers
           v-if="selectedRoute"
-          :selectedRoute="selectedRoute"
-          :selectedTrip="selectedTrip"
-          :selectedStation="selectedStation"
-          @stationClick="selectStation"
+          :selected-route="selectedRoute"
+          :selected-trip="selectedTrip"
+          :selected-station="selectedStation"
+          @station-click="selectStation"
         />
         <RouteShapes
           v-if="selectedRoute"
-          :selectedRoute="selectedRoute"
-          :selectedTrip="selectedTrip"
+          :selected-route="selectedRoute"
+          :selected-trip="selectedTrip"
           @loading="loadingRouteShapes = true"
           @loaded="loadingRouteShapes = false"
         />
@@ -72,7 +72,7 @@
       <div v-if="!initialLoading" class="control-buttons">
         <ModeToggleButton :disabled="!!selectedRoute" />
         <ThemeToggleButton />
-        <UserLocationButton @click="getUserLocation" :active="!!userLocation" />
+        <UserLocationButton :active="!!userLocation" @click="getUserLocation" />
       </div>
 
       <Transition name="slide">
@@ -80,9 +80,9 @@
           v-if="selectedStation"
           class="station-info-card"
           :station="selectedStation"
-          :selectedRoute="selectedRoute"
+          :selected-route="selectedRoute"
           @close="unselectStation"
-          @toggleSelectedRoute="onToggleSelectedRoute"
+          @toggle-selected-route="onSelectedRouteToggle"
         />
       </Transition>
       <Transition name="fade">
@@ -95,42 +95,42 @@
       </Transition>
     </div>
     <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loadingRouteShapes || isUserLocationLoading || (!initialLoading && !store.isInStationsMode && loadingBuses)" delayed fixed />
+    <LoadingIndicator :loading="loadingRouteShapes || loadingUserLocation || loadingBuses" delayed fixed />
   </div>
 </template>
 
 <script setup>
 import {
   ref, onMounted, computed, watch,
-} from 'vue';
+} from 'vue'
 
-import 'leaflet/dist/leaflet.css';
-import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet';
+import 'leaflet/dist/leaflet.css'
+import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'
 
-import VueMultiselect from 'vue-multiselect';
-import { useToast } from 'vue-toastification';
+import VueMultiselect from 'vue-multiselect'
+import { useToast } from 'vue-toastification'
 
-import axios from '../axios/index';
+import axios from '../axios/index'
 
-import BusMarkers from '../components/map-layers/BusMarkers.vue';
-import RouteStationMarkers from '../components/map-layers/RouteStationMarkers.vue';
-import StationMarkers from '../components/map-layers/StationMarkers.vue';
-import RouteShapes from '../components/map-layers/RouteShapes.vue';
-import LoadingIndicator from '../components/animations/LoadingIndicator.vue';
-import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue';
-import BusInfoCard from '../components/cards/BusInfoCard.vue';
-import StationInfoCard from '../components/cards/StationInfoCard.vue';
-import ThemeToggleButton from '../components/controls/ThemeToggleButton.vue';
-import ModeToggleButton from '../components/controls/ModeToggleButton.vue';
-import UserLocationButton from '../components/controls/UserLocationButton.vue';
-import UserLocationMarker from '../components/map-layers/UserLocationMarker.vue';
+import BusMarkers from '../components/map-layers/BusMarkers.vue'
+import RouteStationMarkers from '../components/map-layers/RouteStationMarkers.vue'
+import StationMarkers from '../components/map-layers/StationMarkers.vue'
+import RouteShapes from '../components/map-layers/RouteShapes.vue'
+import LoadingIndicator from '../components/animations/LoadingIndicator.vue'
+import BusLoadingIndicator from '../components/animations/BusLoadingIndicator.vue'
+import BusInfoCard from '../components/cards/BusInfoCard.vue'
+import StationInfoCard from '../components/cards/StationInfoCard.vue'
+import ThemeToggleButton from '../components/controls/ThemeToggleButton.vue'
+import ModeToggleButton from '../components/controls/ModeToggleButton.vue'
+import UserLocationButton from '../components/controls/UserLocationButton.vue'
+import UserLocationMarker from '../components/map-layers/UserLocationMarker.vue'
 
-import { usePreferencesStore } from '../stores/preferences';
-import { useGeolocation } from '../composables/geolocation';
+import { usePreferencesStore } from '../stores/preferences'
+import { useGeolocation } from '../composables/geolocation'
 
-const store = usePreferencesStore();
+const store = usePreferencesStore()
 
-const ljubljanaCenter = { lat: 46.0577, lng: 14.5057 };
+const ljubljanaCenter = { lat: 46.0577, lng: 14.5057 }
 
 const mapConfig = ref({
   zoom: 15,
@@ -141,49 +141,49 @@ const mapConfig = ref({
     zoomSnap: 1,
     zoomControl: false,
   },
-});
+})
 
-const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`;
+const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`
 
-const activeRoutes = ref([]);
-const selectedRoute = ref(null);
-const selectedTrip = ref(null);
-const loadingBuses = ref(false);
-const loadingRouteShapes = ref(false);
-const loadingActiveRoutes = ref(true);
-const selectedBus = ref(null);
-const selectedStation = ref(null);
-const mapCenter = ref(ljubljanaCenter);
-const map = ref(null);
-const requestingLocation = ref(false);
-const initialLoading = ref(true);
+const activeRoutes = ref([])
+const selectedRoute = ref(null)
+const selectedTrip = ref(null)
+const loadingBuses = ref(false)
+const loadingRouteShapes = ref(false)
+const loadingActiveRoutes = ref(true)
+const selectedBus = ref(null)
+const selectedStation = ref(null)
+const mapCenter = ref(ljubljanaCenter)
+const map = ref(null)
+const requestingLocation = ref(false)
+const initialLoading = ref(true)
 
-let leafletTilePane;
+let leafletTilePane
 
-const { userLocation, isUserLocationLoading, userLocationError } = useGeolocation(requestingLocation);
-const toast = useToast();
+const { userLocation, loadingUserLocation, userLocationError } = useGeolocation(requestingLocation)
+const toast = useToast()
 
 const mapContainerClass = computed(() => {
-  return initialLoading.value ? 'loading-map' : '';
-});
+  return initialLoading.value ? 'loading-map' : ''
+})
 
 async function fetchActiveRoutes() {
   try {
-    const res = await axios.get('route/active-routes');
-    const fetchedRoutes = res.data.data;
-    const routes = [];
+    const res = await axios.get('route/active-routes')
+    const fetchedRoutes = res.data.data
+    const routes = []
 
     fetchedRoutes.forEach((route) => {
-      const previousRoute = routes[routes.length - 1];
+      const previousRoute = routes[routes.length - 1]
 
       const trip = {
         id: route.trip_id,
         name: route.route_name,
         shortName: route.short_route_name,
-      };
+      }
 
       if (routes.length > 0 && previousRoute.route_id === route.route_id) {
-        previousRoute.trips.push(trip);
+        previousRoute.trips.push(trip)
       } else {
         routes.push({
           route_id: route.route_id,
@@ -191,123 +191,127 @@ async function fetchActiveRoutes() {
           route_number: route.route_number,
           short_route_name: route.short_route_name,
           trips: [trip],
-        });
+        })
       }
-    });
-    activeRoutes.value = routes;
-    loadingActiveRoutes.value = false;
+    })
+    activeRoutes.value = routes
+    loadingActiveRoutes.value = false
   } catch {
-    toast.error('Error fetching bus routes');
-    loadingActiveRoutes.value = false;
+    toast.error('Error fetching bus routes')
+    loadingActiveRoutes.value = false
   }
 }
 
 function selectBus(bus) {
-  selectedBus.value = bus;
-  mapConfig.value.center = [bus.latitude, bus.longitude];
+  selectedBus.value = bus
+  mapConfig.value.center = [bus.latitude, bus.longitude]
 }
 
 function unselectBus() {
-  selectedBus.value = null;
+  selectedBus.value = null
 }
 
 function selectStation(station) {
-  const stationsTrip = selectedRoute.value?.trips.find((trip) => trip.id === station.tripId);
-  selectedStation.value = station;
-  selectedStation.value.trip = stationsTrip;
-  mapConfig.value.center = [station.latitude, station.longitude];
+  const stationsTrip = selectedRoute.value?.trips.find((trip) => trip.id === station.tripId)
+  selectedStation.value = station
+  selectedStation.value.trip = stationsTrip
+  mapConfig.value.center = [station.latitude, station.longitude]
 }
 
 function unselectStation() {
-  selectedStation.value = null;
+  selectedStation.value = null
 }
 
 function updateMapTheme() {
   if (store.darkTheme) {
-    leafletTilePane.classList.add('dark-map-tiles');
+    leafletTilePane.classList.add('dark-map-tiles')
   } else {
-    leafletTilePane.classList.remove('dark-map-tiles');
+    leafletTilePane.classList.remove('dark-map-tiles')
   }
 }
 
 function initTilePane() {
-  leafletTilePane = document.querySelector('.leaflet-tile-pane');
-  updateMapTheme();
+  leafletTilePane = document.querySelector('.leaflet-tile-pane')
+  updateMapTheme()
 }
 
 function onMapMove(newCenter) {
-  mapCenter.value = newCenter;
+  mapCenter.value = newCenter
 }
 
-function onToggleSelectedRoute(routeNumber) {
+function onSelectedRouteToggle(routeNumber) {
   if (selectedRoute.value?.route_number === routeNumber) {
-    selectedRoute.value = null;
-    return;
+    selectedRoute.value = null
+    return
   }
-  const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber);
+  const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber)
   if (newSelectedRoute) {
-    selectedRoute.value = newSelectedRoute;
+    selectedRoute.value = newSelectedRoute
   }
 }
 
 function focusMapOnUserLocation() {
-  const { lat, lng } = userLocation.value;
-  if (mapConfig.value.center[0] === lat && mapConfig.value.center[1] === lng) {
+  const { lat, lng } = userLocation.value
+  const [currentMapLat, currentMapLng] = mapConfig.value.center
+  if (currentMapLat === lat && currentMapLng === lng) {
     // force pan by adding random noise
-    const randomDiff = (Math.random() - 0.5) / 1000000;
-    mapConfig.value.center = [mapConfig.value.center[0] + randomDiff, mapConfig.value.center[1] + randomDiff];
+    const randomDiff = (Math.random() - 0.5) / 1000000
+    mapConfig.value.center = [currentMapLat + randomDiff, currentMapLng + randomDiff]
   } else {
-    mapConfig.value.center = [lat, lng];
+    mapConfig.value.center = [lat, lng]
   }
 }
 
 function getUserLocation() {
   if (userLocation.value) {
-    focusMapOnUserLocation();
-    return;
+    focusMapOnUserLocation()
+    return
   }
 
   if (userLocationError.value && userLocationError.value.code === 1) {
-    toast.info('To display your location on the map you must allow the browser to use your location');
-    userLocation.value = undefined;
+    toast.info('To display your location on the map you must allow the browser to use your location')
+    userLocation.value = undefined
   }
 
-  requestingLocation.value = true;
+  requestingLocation.value = true
+}
+
+function onLoadingBuses() {
+  if (!initialLoading.value && !store.isInStationsMode) loadingBuses.value = true
 }
 
 function onLoadedBuses() {
-  if (!store.isInStationsMode) initialLoading.value = false;
-  loadingBuses.value = false;
+  if (!store.isInStationsMode) initialLoading.value = false
+  loadingBuses.value = false
 }
 
 function onLoadedStations() {
-  if (store.isInStationsMode) initialLoading.value = false;
+  if (store.isInStationsMode) initialLoading.value = false
 }
 
 onMounted(() => {
-  fetchActiveRoutes();
-});
+  fetchActiveRoutes()
+})
 
 watch(selectedRoute, (newSelectedRoute) => {
-  selectedTrip.value = null;
+  selectedTrip.value = null
 
-  if (selectedBus.value && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
-    selectedBus.value = null;
+  if (selectedBus.value
+  && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
+    selectedBus.value = null
   }
-});
+})
 
-watch(() => store.darkTheme, () => {
-  updateMapTheme();
-});
+watch(() => store.darkTheme, updateMapTheme)
 
 watch(() => store.isInStationsMode, (isInStationsMode) => {
-  if (isInStationsMode) selectedBus.value = null;
-});
+  if (isInStationsMode) selectedBus.value = null
+})
 
 watch(userLocation, (newUserLocation) => {
-  const { lat, lng } = newUserLocation;
-  mapConfig.value.center = [lat, lng];
-});
+  const { lat, lng } = newUserLocation
+  mapConfig.value.center = [lat, lng]
+})
 
 </script>
 

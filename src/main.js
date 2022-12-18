@@ -1,15 +1,15 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import VueDragscroll from 'vue-dragscroll';
-import Toast from 'vue-toastification';
-import App from './App.vue';
-import router from './router';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import VueDragscroll from 'vue-dragscroll'
+import Toast from 'vue-toastification'
+import App from './App.vue'
+import router from './router'
 
-import 'vue-toastification/dist/index.css';
+import 'vue-toastification/dist/index.css'
 
-import './assets/main.css';
+import './assets/main.css'
 
-const pinia = createPinia();
+const pinia = createPinia()
 
 const toastOptions = {
   transition: 'Vue-Toastification__fade',
@@ -24,11 +24,11 @@ const toastOptions = {
   showCloseButtonOnHover: false,
   hideProgressBar: true,
   icon: true,
-};
+}
 
 createApp(App)
   .use(router)
   .use(VueDragscroll)
   .use(Toast, toastOptions)
   .use(pinia)
-  .mount('#app');
+  .mount('#app')

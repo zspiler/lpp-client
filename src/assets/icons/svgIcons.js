@@ -41,7 +41,7 @@ xml:space="preserve">
     d="M369.537,243.413c4.142,0,7.5-3.358,7.5-7.5v-6.667c0-4.142-3.358-7.5-7.5-7.5s-7.5,3.358-7.5,7.5v6.667
     C362.037,240.055,365.395,243.413,369.537,243.413z" />
 </g>
-</svg>`;
+</svg>`
 
 export const outlinedBusIconMirrored = `<svg
 version="1.1"
@@ -86,7 +86,7 @@ xml:space="preserve">
     d="M369.537,243.413c4.142,0,7.5-3.358,7.5-7.5v-6.667c0-4.142-3.358-7.5-7.5-7.5s-7.5,3.358-7.5,7.5v6.667
     C362.037,240.055,365.395,243.413,369.537,243.413z" />
 </g>
-</svg>`;
+</svg>`
 
 export const busIcon = `<?xml version="1.0" encoding="utf-8"?>
 <svg viewBox="0 0 410.52 410.52" style="enable-background:new 0 0 410.52 410.52; overflow: visible" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +102,7 @@ export const busIcon = `<?xml version="1.0" encoding="utf-8"?>
     <rect transform="scale (-1, 1)" transform-origin="center" fill="{color}" x="130.279" y="264.062" width="146.467" height="31.019" style="stroke: {color}"/>
     <rect transform="scale (-1, 1)" transform-origin="center" fill="{color}" x="123.391" y="256.051" width="162.391" height="12.866" style="stroke: {color}"/>
   </g>
-</svg>`;
+</svg>`
 
 export const busIconMirrored = `<?xml version="1.0" encoding="utf-8"?>
 <svg viewBox="0 0 410.52 410.52" style="enable-background:new 0 0 410.52 410.52; overflow: visible" xmlns="http://www.w3.org/2000/svg">
@@ -118,9 +118,9 @@ export const busIconMirrored = `<?xml version="1.0" encoding="utf-8"?>
     <rect fill="{color}" x="130.279" y="264.062" width="146.467" height="31.019" style="stroke: {color}"/>
     <rect fill="{color}" x="123.391" y="256.051" width="162.391" height="12.866" style="stroke: {color}"/>
   </g>
-</svg>`;
+</svg>`
 
 export const stationIcon = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <circle cx="50" cy="50" r="50" fill="{color}" />
 </svg>
-`;
+`

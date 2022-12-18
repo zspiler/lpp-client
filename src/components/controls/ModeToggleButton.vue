@@ -1,9 +1,9 @@
 <template>
-  <button class="icon-button" :class="{ 'dark-button': store.darkTheme, disabled: props.disabled }" @click="debouncedToggleMode" :disabled="props.disabled">
+  <button class="icon-button" :class="{ 'dark-button': store.darkTheme, disabled: props.disabled }" :disabled="props.disabled" @click="debouncedToggleMode">
     <svg
       v-if="store.isInStationsMode"
-      version="1.1"
       id="Layer_1"
+      version="1.1"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       x="0px"
@@ -29,7 +29,8 @@
             c0-5.768-4.677-10.444-10.444-10.444H79.46c-5.767,0-10.444,4.676-10.444,10.444v29.242c0,5.768,4.677,10.444,10.444,10.444
             h19.909v19.843H58.485V281.163h334.198V423.088z M392.683,260.275H234.568l127.413-127.413h30.702V260.275z M453.953,247.249
             c-1.536-0.001-2.785-1.25-2.785-2.785v-81.749c0-1.536,1.249-2.785,2.785-2.785h34.116c1.535,0,2.784,1.249,2.784,2.785v81.749
-            c0,1.535-1.249,2.785-2.784,2.785H453.953z" />
+            c0,1.535-1.249,2.785-2.784,2.785H453.953z"
+          />
         </g>
       </g>
       <g>
@@ -37,7 +38,8 @@
           <path
             d="M252.206,152.422c-4.068-4.091-10.681-4.107-14.771-0.04l-0.097,0.096c-4.089,4.068-4.107,10.681-0.039,14.769
             c2.041,2.052,4.722,3.079,7.405,3.079c2.664,0,5.328-1.013,7.366-3.039l0.097-0.096
-            C256.256,163.124,256.274,156.511,252.206,152.422z" />
+            C256.256,163.124,256.274,156.511,252.206,152.422z"
+          />
         </g>
       </g>
     </svg>
@@ -57,24 +59,23 @@
         <rect x="123.391" y="256.051" width="162.391" height="12.866" style="stroke: currentColor" />
       </g>
     </svg>
-
   </button>
 </template>
 
 <script setup>
-import { debounce } from 'debounce';
-import { usePreferencesStore } from '@/stores/preferences';
+import { debounce } from 'debounce'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
   },
-});
+})
 
-const store = usePreferencesStore();
+const store = usePreferencesStore()
 
-const debouncedToggleMode = debounce(store.toggleMode, 300, true);
+const debouncedToggleMode = debounce(store.toggleMode, 300, true)
 
 </script>
 

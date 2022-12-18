@@ -1,9 +1,9 @@
 <template>
-  <div :class="{ fixed: props.fixed }" v-show="props.delayed ? showLoader : loading" />
+  <div v-show="props.delayed ? showLoader : loading" :class="{ fixed: props.fixed }" />
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue'
 
 const props = defineProps({
   loading: {
@@ -18,24 +18,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
-const showLoader = ref(false);
+const showLoader = ref(false)
 
 function delayLoadingAnimation() {
   if (props.loading) {
     setTimeout(() => {
       if (props.loading) {
-        showLoader.value = true;
+        showLoader.value = true
       }
-    }, 500);
+    }, 500)
   } else {
-    showLoader.value = false;
+    showLoader.value = false
   }
 }
 
 if (props.delayed) {
-  watchEffect(delayLoadingAnimation);
+  watchEffect(delayLoadingAnimation)
 }
 </script>
 
