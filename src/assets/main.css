@@ -44,3 +44,36 @@ nav a.router-link-exact-active {
   background: rgba(0, 106, 46, 0.6)
 }
 
+.multiselect__clear {
+  all: unset;
+  position: absolute;
+  right: 41px;
+  height: 16px;
+  width: 16px;
+  top: 13px;
+  display: block;
+  cursor: pointer;
+  z-index: 2;
+  opacity: 0.2;
+}
+
+.multiselect__clear:hover {
+  opacity: 0.4;
+}
+
+.multiselect__clear:before, .multiselect__clear:after {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 2px;
+  top: 0px;
+  background: black;
+}
+
+.multiselect__clear:before {
+  transform: rotate(45deg);
+}
+
+.multiselect__clear:after {
+  transform: rotate(-45deg);
+}

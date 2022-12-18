@@ -10,8 +10,11 @@
         label="route_number"
         placeholder="Select route"
         select-label=""
-      />
-
+      >
+        <template #clear>
+          <button v-if="selectedRoute" class="multiselect__clear" @click="clearSelectedRoute" />
+        </template>
+      </VueMultiselect>
       <Transition name="fade">
         <VueMultiselect
           v-if="!initialLoading && selectedRoute"
@@ -22,7 +25,11 @@
           label="name"
           placeholder="Select trip"
           select-label=""
-        />
+        >
+          <template #clear>
+            <button v-if="selectedTrip" class="multiselect__clear" @click="clearSelectedTrip" />
+          </template>
+        </VueMultiselect>
       </Transition>
     </div>
 
@@ -283,6 +290,15 @@ function onLoadingBuses() {
 function onLoadedBuses() {
   if (!store.isInStationsMode) initialLoading.value = false
   loadingBuses.value = false
+}
+
+function clearSelectedTrip() {
+  selectedTrip.value = null
+}
+
+function clearSelectedRoute() {
+  selectedTrip.value = null
+  selectedRoute.value = null
 }
 
 function onLoadedStations() {
