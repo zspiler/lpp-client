@@ -1,5 +1,5 @@
 <template>
-  <button class="icon-button" :class="{ 'dark-button': store.darkTheme }" @click="toggleTheme">
+  <button class="control-button" :class="{ 'dark-control-button': store.darkTheme }" @click="toggleTheme">
     <svg
       class="w-6 h-6"
       fill="none"
@@ -34,23 +34,3 @@ function toggleTheme() {
   store.darkTheme = !store.darkTheme
 }
 </script>
-
-<style scoped>
-.icon-button {
-  display: block;
-  padding: 12px;
-  height: 60px;
-  width: 60px;
-  background: none;
-  border: none;
-  border-radius: 50%;
-  color: rgb(255, 255, 255);
-  background-color: rgba(129, 129, 129, 0.5);
-}
-
-.dark-button {
-  background: rgba(0,0,0,0.5);
-  filter: drop-shadow(0px 0px 5px #ffffff);
-}
-
-</style>

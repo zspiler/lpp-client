@@ -1,5 +1,5 @@
 <template>
-  <button class="icon-button" :class="{ 'dark-button': store.darkTheme, active: props.active }">
+  <button class="control-button" :class="{ 'dark-control-button': store.darkTheme, active: props.active }">
     <svg
       id="Capa_1"
       version="1.1"
@@ -36,26 +36,12 @@ const store = usePreferencesStore()
 </script>
 
 <style scoped>
-.icon-button {
-  display: block;
-  padding: 15px;
-  height: 60px;
-  width: 60px;
-  background: none;
-  border: none;
-  border-radius: 50%;
-  color: rgb(255, 255, 255);
-  background-color: rgba(129, 129, 129, 0.5);
-}
 
+.control-button {
+  padding: 15px;
+}
 .active {
   color: rgba(29, 89, 242, 0.5);
   background: white !important;
 }
-
-.dark-button {
-  background: rgba(0,0,0,0.5);
-  filter: drop-shadow(0px 0px 5px #ffffff);
-}
-
 </style>
