@@ -1,6 +1,4 @@
-import {
-  ref, onUnmounted, unref, watch,
-} from 'vue'
+import { ref, onUnmounted, unref, watch } from 'vue'
 
 export function useGeolocation(requestingLocation, geolocationOptions) {
   let handlerId

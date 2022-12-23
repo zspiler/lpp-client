@@ -107,9 +107,7 @@
 </template>
 
 <script setup>
-import {
-  ref, onMounted, computed, watch,
-} from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
 import 'leaflet/dist/leaflet.css'
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'
@@ -137,7 +135,9 @@ import axios from '@/axios/index.ts'
 
 const store = usePreferencesStore()
 
-const ljubljanaCenter = { lat: 46.0577, lng: 14.5057 }
+const ljubljanaCenter = {
+  lat: 46.0577, lng: 14.5057,
+}
 
 const mapConfig = ref({
   zoom: 15,

@@ -45,6 +45,7 @@ module.exports = {
       },
     ],
     'curly': 'error',
+    'object-curly-newline': 'off',
     'import/extensions': [
       'error',
       'ignorePackages',

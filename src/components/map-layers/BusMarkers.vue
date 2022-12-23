@@ -13,9 +13,7 @@
 </template>
 
 <script setup>
-import {
-  ref, onMounted, onUnmounted, watch,
-} from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 import { useToast } from 'vue-toastification'
@@ -23,9 +21,7 @@ import { useToast } from 'vue-toastification'
 import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors.ts'
 import axios from '@/axios/index.ts'
-import {
-  busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
-} from '@/assets/icons/svgIcons.ts'
+import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons.ts'
 
 const store = usePreferencesStore()
 
@@ -82,7 +78,9 @@ function getBusIcon(bus) {
   const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus'
   const icon = leaflet.divIcon({
     className: bus.bus_name === selectedBusName.value ? selectedIconClass : '',
-    html: leaflet.Util.template(svg, { color: routeColors[bus.route_number], angle }),
+    html: leaflet.Util.template(svg, {
+      color: routeColors[bus.route_number], angle,
+    }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
   })

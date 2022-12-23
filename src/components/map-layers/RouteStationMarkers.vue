@@ -11,9 +11,7 @@
 </template>
 
 <script setup>
-import {
-  ref, watch, onMounted,
-} from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 
@@ -58,7 +56,9 @@ function getMarkerIcon(marker) {
   const color = isMarkerSelected ? selectedMarkerColor : marker.color
   const icon = leaflet.divIcon({
     className: isMarkerSelected ? 'selected-station-icon' : 'station-icon',
-    html: leaflet.Util.template(stationIcon, { color }),
+    html: leaflet.Util.template(stationIcon, {
+      color,
+    }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],
   })
@@ -93,7 +93,9 @@ function updateStationMarkers() {
 
 async function fetchStationsOnSelectedRoute() {
   const selectedTrips = props.selectedRoute.trips
-    .map((trip) => ({ tripId: trip.id, routeId: props.selectedRoute.route_id }))
+    .map((trip) => ({
+      tripId: trip.id, routeId: props.selectedRoute.route_id,
+    }))
     .filter((trip) => !props.selectedTrip || trip.tripId === props.selectedTrip.id)
 
   const requests = selectedTrips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`))
@@ -104,7 +106,9 @@ async function fetchStationsOnSelectedRoute() {
       const tripId = selectedTrips[index].tripId
       const selectedRouteNumber = props.selectedRoute.route_number
 
-      const fetchedStations = data.map((station) => ({ ...station, tripId }))
+      const fetchedStations = data.map((station) => ({
+        ...station, tripId,
+      }))
 
       if (selectedRouteNumber in stations.value) {
         stations.value[selectedRouteNumber] = stations.value[selectedRouteNumber].concat(fetchedStations)

@@ -13,9 +13,7 @@
 </template>
 
 <script setup>
-import {
-  ref, watch, onMounted, computed,
-} from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 import { useToast } from 'vue-toastification'
@@ -107,7 +105,9 @@ async function fetchAllStations() {
   try {
     emit('loadingStations')
     const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`)
-    stations.value = res.data.data.map(((station) => ({ ...station, station_code: station.ref_id })))
+    stations.value = res.data.data.map(((station) => ({
+      ...station, station_code: station.ref_id,
+    })))
     updateStationMarkers()
     emit('loadedStations')
   } catch {
