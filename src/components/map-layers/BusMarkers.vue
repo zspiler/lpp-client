@@ -20,7 +20,7 @@ import { useToast } from 'vue-toastification'
 
 import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors.ts'
-import axios from '@/axios/index.ts'
+import axios from '@/api/axios'
 import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons.ts'
 
 const store = usePreferencesStore()

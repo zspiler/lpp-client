@@ -19,7 +19,7 @@ import { LGeoJson } from '@vue-leaflet/vue-leaflet'
 import { useToast } from 'vue-toastification'
 
 import { routeColors } from '@/colors.ts'
-import axios from '@/axios/index.ts'
+import axios from '@/api/axios'
 
 const props = defineProps({
   selectedRoute: {

@@ -44,16 +44,22 @@
   </div>
 </template>
 
-<script setup>
-import {
-  watch, ref, onMounted, onUnmounted, computed,
-} from 'vue'
+<script setup lang="ts">
+import { watch, ref, onMounted, onUnmounted, computed } from 'vue'
+import type { Ref } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
 import { routeColors } from '@/colors'
-import axios from '@/axios/index'
 import { compareRouteNumbers } from '@/utils/index'
+
+import { getArrivals } from '@/api/api'
+import { Arrival } from '@/api/types'
+
+type ArrivalGroup = {
+  eta: number,
+  arrivals: Arrival[]
+}
 
 const props = defineProps({
   station: {
@@ -65,11 +71,12 @@ const props = defineProps({
     default: null,
   },
 })
+
 const emit = defineEmits(['close', 'toggleSelectedRoute'])
 
 const loading = ref(true)
-const arrivals = ref([])
-const fetchInterval = ref(null)
+const arrivals: Ref<ArrivalGroup[]> = ref([])
+const fetchInterval: Ref<number | null> = ref(null)
 
 const toast = useToast()
 
@@ -81,12 +88,13 @@ function closeCard() {
 
 async function fetchArrivals() {
   try {
-    const res = await axios.get(`station/arrival?station-code=${props.station.station_code}`)
+    const response = await getArrivals(props.station.station_code)
+    const arrivalData = response.data
 
-    let previousEstimatedTime
-    const arrivalsByEstimatedTime = []
+    let previousEstimatedTime: number
+    const arrivalsByEstimatedTime: ArrivalGroup[] = []
 
-    res.data.data.arrivals.forEach((arrival) => {
+    arrivalData.arrivals.forEach((arrival) => {
       const estimatedTime = arrival.eta_min
       if (estimatedTime !== previousEstimatedTime) {
         arrivalsByEstimatedTime.push({
@@ -104,17 +112,17 @@ async function fetchArrivals() {
     })
 
     arrivals.value = arrivalsByEstimatedTime
-    console.log('arrivals: ')
-    console.log(arrivals.value)
     loading.value = false
   } catch {
     toast.error('Error fetching arrival data')
-    clearInterval(fetchInterval.value)
+    if (fetchInterval.value) {
+      clearInterval(fetchInterval.value)
+    }
     loading.value = false
   }
 }
 
-function selectArrival(arrival) {
+function selectArrival(arrival: Arrival) {
   emit('toggleSelectedRoute', arrival.route_name)
 }
 
@@ -125,7 +133,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearInterval(fetchInterval.value)
+  if (fetchInterval.value) {
+    clearInterval(fetchInterval.value)
+  }
 })
 
 watch(

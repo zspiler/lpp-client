@@ -131,7 +131,7 @@ import UserLocationMarker from '@/components/map-layers/UserLocationMarker.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 import { useGeolocation } from '@/composables/geolocation'
 import RouteStationMarkers from '@/components/map-layers/RouteStationMarkers.vue'
-import axios from '@/axios/index.ts'
+import axios from '@/api/axios'
 
 const store = usePreferencesStore()
 

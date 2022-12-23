@@ -17,7 +17,7 @@ import leaflet from 'leaflet'
 
 import { stationIcon } from '@/assets/icons/svgIcons.ts'
 import { usePreferencesStore } from '@/stores/preferences'
-import axios from '@/axios/index.ts'
+import axios from '@/api/axios'
 import { routeColors } from '@/colors.ts'
 
 const store = usePreferencesStore()

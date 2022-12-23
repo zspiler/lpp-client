@@ -18,7 +18,7 @@ import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 import { useToast } from 'vue-toastification'
 
-import axios from '@/axios/index.ts'
+import axios from '@/api/axios'
 import { stationIcon } from '@/assets/icons/svgIcons.ts'
 import { usePreferencesStore } from '@/stores/preferences'
 
