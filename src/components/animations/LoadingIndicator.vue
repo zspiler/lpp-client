@@ -2,7 +2,7 @@
   <div v-show="props.delayed ? showLoader : loading" :class="{ fixed: props.fixed }" />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect } from 'vue'
 
 const props = defineProps({
