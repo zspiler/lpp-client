@@ -8,7 +8,7 @@
         To: {{ props.station.trip?.shortName }}
       </div>
     </div>
-    <div v-dragscroll class="content">
+    <div v-dragscroll class="card-content">
       <LoadingIndicator :loading="loading" delayed fixed />
       <template v-if="!loading">
         <div v-if="(arrivals.length === 0)" class="no-arrivals-message">
@@ -104,6 +104,8 @@ async function fetchArrivals() {
     })
 
     arrivals.value = arrivalsByEstimatedTime
+    console.log('arrivals: ')
+    console.log(arrivals.value)
     loading.value = false
   } catch {
     toast.error('Error fetching arrival data')
@@ -182,9 +184,10 @@ watch(
 
 .eta-text {
   width: 60px;
+  flex-shrink: 0;
 }
 
-.content {
+.card-content {
   overflow: hidden;
   height: 77%;
 }
