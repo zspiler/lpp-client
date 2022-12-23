@@ -62,7 +62,7 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { debounce } from 'debounce'
 import { usePreferencesStore } from '@/stores/preferences'
 

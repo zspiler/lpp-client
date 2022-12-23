@@ -22,6 +22,7 @@
     "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
+    "@types/debounce": "^1.2.1",
     "@typescript-eslint/parser": "^5.47.0",
     "@vitejs/plugin-vue": "^3.1.2",
     "eslint": "^8.22.0",

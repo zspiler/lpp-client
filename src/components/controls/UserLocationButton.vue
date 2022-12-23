@@ -22,7 +22,7 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
