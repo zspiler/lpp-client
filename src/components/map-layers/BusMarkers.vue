@@ -20,12 +20,12 @@ import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 import { useToast } from 'vue-toastification'
 
-import { routeColors } from '@/colors'
-import axios from '@/axios'
+import { usePreferencesStore } from '@/stores/preferences'
+import { routeColors } from '@/colors.ts'
+import axios from '@/axios/index.ts'
 import {
   busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored,
-} from '@/assets/icons/svgIcons'
-import { usePreferencesStore } from '@/stores/preferences'
+} from '@/assets/icons/svgIcons.ts'
 
 const store = usePreferencesStore()
 

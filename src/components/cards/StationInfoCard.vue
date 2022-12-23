@@ -50,10 +50,10 @@ import {
 } from 'vue'
 import { useToast } from 'vue-toastification'
 
+import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
 import { routeColors } from '@/colors'
-import axios from '@/axios'
-import { compareRouteNumbers } from '@/utils'
-import LoadingIndicator from '../animations/LoadingIndicator.vue'
+import axios from '@/axios/index'
+import { compareRouteNumbers } from '@/utils/index'
 
 const props = defineProps({
   station: {

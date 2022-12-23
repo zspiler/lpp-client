@@ -20,8 +20,8 @@ import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 import { useToast } from 'vue-toastification'
 
-import axios from '@/axios/index'
-import { stationIcon } from '@/assets/icons/svgIcons'
+import axios from '@/axios/index.ts'
+import { stationIcon } from '@/assets/icons/svgIcons.ts'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const maxDistanceToStation = 2000

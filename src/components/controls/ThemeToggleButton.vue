@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { usePreferencesStore } from '../../stores/preferences'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const store = usePreferencesStore()
 

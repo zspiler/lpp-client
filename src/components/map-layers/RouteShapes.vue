@@ -18,8 +18,8 @@ import { ref, watchEffect, computed } from 'vue'
 import { LGeoJson } from '@vue-leaflet/vue-leaflet'
 import { useToast } from 'vue-toastification'
 
-import { routeColors } from '@/colors'
-import axios from '@/axios/index'
+import { routeColors } from '@/colors.ts'
+import axios from '@/axios/index.ts'
 
 const props = defineProps({
   selectedRoute: {

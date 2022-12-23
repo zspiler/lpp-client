@@ -44,14 +44,27 @@ module.exports = {
         'ignoreHTMLTextContents': false,
       },
     ],
-
     'curly': 'error',
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        '': 'never',
+        'js': 'never',
+        'jsx': 'never',
+        'ts': 'never',
+        'tsx': 'never',
+      },
+    ],
   },
   settings: {
     'import/resolver': {
       alias: {
         map: [['@', './src/']],
         extensions: ['.js', '.vue'],
+      },
+      typescript: {
+        alwaysTryTypes: true, // fix .ts imports
       },
     },
   },

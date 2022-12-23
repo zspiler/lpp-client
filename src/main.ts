@@ -3,7 +3,6 @@ import { createPinia } from 'pinia'
 import VueDragscroll from 'vue-dragscroll'
 import Toast from 'vue-toastification'
 import App from './App.vue'
-import router from './router'
 
 import 'vue-toastification/dist/index.css'
 
@@ -27,7 +26,6 @@ const toastOptions = {
 }
 
 createApp(App)
-  .use(router)
   .use(VueDragscroll)
   .use(Toast, toastOptions)
   .use(pinia)

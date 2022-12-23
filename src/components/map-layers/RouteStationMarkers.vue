@@ -17,10 +17,10 @@ import {
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
 
-import axios from '@/axios/index'
-import { routeColors } from '@/colors'
-import { stationIcon } from '@/assets/icons/svgIcons'
+import { stationIcon } from '@/assets/icons/svgIcons.ts'
 import { usePreferencesStore } from '@/stores/preferences'
+import axios from '@/axios/index.ts'
+import { routeColors } from '@/colors.ts'
 
 const store = usePreferencesStore()
 
