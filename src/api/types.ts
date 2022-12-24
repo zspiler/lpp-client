@@ -1,3 +1,5 @@
+import { GeoJsonObject } from 'geojson'
+
 export type Arrival = {
   route_id: string;
   trip_id: string;
@@ -51,4 +53,9 @@ export type Route = {
   route_name: string,
   short_route_name: string
   trip_int_id: string
+  geojson_shape?: GeoJsonObject
+}
+
+export type RouteData = {
+  data: Route[]
 }

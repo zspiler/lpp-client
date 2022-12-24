@@ -69,7 +69,7 @@
         <RouteShapes
           v-if="selectedRoute"
           :selected-route="selectedRoute"
-          :selected-trip="selectedTrip"
+          :selected-trip-id="selectedTrip?.id"
           @loading="loadingRouteShapes = true"
           @loaded="loadingRouteShapes = false"
         />

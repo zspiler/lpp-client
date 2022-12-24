@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
+    "@types/geojson": "^7946.0.10",
     "@vue-leaflet/vue-leaflet": "^0.7.0",
     "@vue/eslint-config-airbnb": "^7.0.0",
     "@vueuse/core": "^9.6.0",

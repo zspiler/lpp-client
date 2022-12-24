@@ -13,28 +13,33 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect, computed } from 'vue'
+import type { Ref } from 'vue'
 import { LGeoJson } from '@vue-leaflet/vue-leaflet'
 import { useToast } from 'vue-toastification'
+import { GeoJsonObject } from 'geojson'
 
-import { routeColors } from '@/colors.ts'
-import axios from '@/api/axios'
+import { routeColors } from '@/colors'
+import { getRouteShape } from '@/api/api'
+import { Route } from '@/api/types'
 
-const props = defineProps({
-  selectedRoute: {
-    type: Object,
-    required: true,
-  },
-  selectedTrip: {
-    type: Object,
-    default: null,
-  },
-})
+type RouteShapesByRoute = {
+  [routeNumber: string]: {
+    [tripId: string]: GeoJsonObject
+  };
+}
+
+interface Props {
+  selectedRoute: Route,
+  selectedTripId?: string,
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits(['loading', 'loaded'])
 
-const routeShapes = ref({})
+const routeShapes: Ref<RouteShapesByRoute> = ref({})
 
 const toast = useToast()
 
@@ -43,7 +48,7 @@ const selectedRouteShapes = computed(() => {
   if (!(routeNumber in routeShapes.value)) return null
 
   const selectedTrips = Object.keys(routeShapes.value[routeNumber])
-    .filter((tripId) => !props.selectedTrip || tripId === props.selectedTrip.id)
+    .filter((tripId) => !props.selectedTripId || tripId === props.selectedTripId)
 
   return selectedTrips.map((tripId) => (
     {
@@ -57,10 +62,10 @@ const selectedRouteShapes = computed(() => {
 async function fetchSelectedRoutesShape() {
   emit('loading')
   try {
-    const res = await axios.get(`route/routes?route-id=${props.selectedRoute.route_id}&shape=1`)
-    const data = res.data.data
+    const response = await getRouteShape(props.selectedRoute.route_id)
+    const routeShapeData = response.data
 
-    data.forEach((trip) => {
+    routeShapeData.forEach((trip) => {
       const routeNumber = trip.route_number
       const tripId = trip.trip_id
       const routeShape = trip.geojson_shape
@@ -73,6 +78,7 @@ async function fetchSelectedRoutesShape() {
 
       routeShapes.value[routeNumber][tripId] = routeShape
     })
+
     emit('loaded')
   } catch {
     toast.error('Error fetching route shape')
@@ -84,5 +90,4 @@ watchEffect(() => {
   if (props.selectedRoute.route_number in routeShapes.value) return
   fetchSelectedRoutesShape()
 })
-
 </script>
