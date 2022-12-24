@@ -11,6 +11,7 @@ module.exports = {
     'plugin:vue/vue3-strongly-recommended',
     '@vue/airbnb',
   ],
+  plugins: ['@typescript-eslint'],
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -57,6 +58,7 @@ module.exports = {
         'tsx': 'never',
       },
     ],
+    '@typescript-eslint/no-explicit-any': 'error',
   },
   settings: {
     'import/resolver': {
