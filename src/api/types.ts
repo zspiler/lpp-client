@@ -23,3 +23,32 @@ export type ArrivalData = {
     arrivals: Arrival[]
   }
 }
+
+export type Bus = {
+  route_number: string,
+  route_id: string,
+  trip_id: string,
+  route_name: string,
+  destination: string,
+  bus_unit_id: string,
+  bus_name: string,
+  bus_timestamp: string,
+  longitude: number,
+  latitude: number,
+  altitude: number,
+  ground_speed: number,
+  cardinal_direction: number
+}
+
+export type BusData = {
+  data: Bus[]
+}
+
+export type Route = {
+  trip_id: string,
+  route_id: string,
+  route_number: string,
+  route_name: string,
+  short_route_name: string
+  trip_int_id: string
+}

@@ -46,7 +46,7 @@
           :visible="(!store.isInStationsMode || !!selectedRoute)"
           :active-routes="activeRoutes"
           :selected-route="selectedRoute"
-          :selected-trip="selectedTrip"
+          :selected-trip-id="selectedTrip?.id"
           :selected-bus="selectedBus"
           @bus-click="selectBus"
           @loading-buses="onLoadingBuses"

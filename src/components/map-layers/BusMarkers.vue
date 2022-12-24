@@ -12,56 +12,53 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import type { Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
-import leaflet from 'leaflet'
+import leaflet, { LeafletEvent } from 'leaflet'
 import { useToast } from 'vue-toastification'
 
 import { usePreferencesStore } from '@/stores/preferences'
-import { routeColors } from '@/colors.ts'
-import axios from '@/api/axios'
-import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons.ts'
+import { routeColors } from '@/colors'
+import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons'
+import { getBusesOnRoute } from '@/api/api'
+import { Route, BusData, Bus } from '@/api/types'
 
-const store = usePreferencesStore()
+type BusMarker = {
+  bus: Bus,
+  color: string,
+}
 
-const props = defineProps({
-  selectedRoute: {
-    type: Object,
-    default: null,
-  },
-  selectedTrip: {
-    type: Object,
-    default: null,
-  },
-  activeRoutes: Array.of(Object),
-  selectedBus: {
-    type: Object,
-    default: null,
-  },
-  visible: {
-    type: Boolean,
-    default: true,
-  },
-})
+interface Props {
+  activeRoutes: Route[],
+  visible: boolean,
+  selectedRoute?: Route,
+  selectedTripId?: string,
+  selectedBus?: Bus,
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits(['loadingBuses', 'loadedBuses', 'busClick'])
 
-const buses = ref({})
-const busMarkers = ref([])
-const fetchBusesInterval = ref(null)
+const buses: Ref<Record<string, Bus>> = ref({})
+const busMarkers: Ref<BusMarker[]> = ref([])
+const fetchBusesInterval: Ref<number | null> = ref(null)
 const selectedBusName = ref(null)
 
 const toast = useToast()
+const store = usePreferencesStore()
 
-function onBusClick(e) {
-  const busName = e.target.options.options.bus.bus_name
+function onBusClick(e: LeafletEvent) {
+  const busName = e.target?.options?.options?.bus?.bus_name
+  if (!busName) return
   const bus = buses.value[busName]
   selectedBusName.value = busName
   emit('busClick', bus)
 }
 
-function getBusIcon(bus) {
+function getBusIcon(bus: Bus) {
   const busDirection = bus.cardinal_direction
 
   let svg
@@ -96,7 +93,7 @@ function updateBusMarkers() {
     const tripId = buses.value[busId].trip_id
 
     if ((!props.selectedRoute || props.selectedRoute.route_id === routeId)
-      && (!props.selectedTrip || props.selectedTrip.id === tripId)) {
+      && (!props.selectedTripId || props.selectedTripId === tripId)) {
       const bus = buses.value[busId]
       const color = routeColors[bus.route_number]
       busMarkers.value.push({ bus, color })
@@ -105,17 +102,16 @@ function updateBusMarkers() {
 }
 
 function fetchBuses() {
-  const requests = props.activeRoutes.reduce((prevRequests, route) => {
+  const requests = props.activeRoutes.reduce<Promise<BusData>[]>((acc, route) => {
     if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
-      prevRequests.push(axios.get(`bus/buses-on-route?route-group-number=${route.route_number}&specific=1`))
+      acc.push(getBusesOnRoute(route.route_number))
     }
-    return prevRequests
+    return acc
   }, [])
 
   Promise.all(requests).then((responses) => {
     responses.forEach((res) => {
-      const fetchedBuses = res.data.data
-      fetchedBuses.forEach((bus) => {
+      res.data.forEach((bus) => {
         buses.value[bus.bus_name] = bus
       })
     })
@@ -123,9 +119,11 @@ function fetchBuses() {
     updateBusMarkers()
   }).catch((errors) => {
     emit('loadedBuses')
-    if (errors.code === 'ECONNABORTED') return
+    if (errors.code === 'ECONNABORTED') return // TODO
     toast.error('Error fetching bus locations')
-    clearInterval(fetchBusesInterval.value)
+    if (fetchBusesInterval.value) {
+      clearInterval(fetchBusesInterval.value)
+    }
   })
 }
 
@@ -136,10 +134,12 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearInterval(fetchBusesInterval.value)
+  if (fetchBusesInterval.value) {
+    clearInterval(fetchBusesInterval.value)
+  }
 })
 
-watch([() => props.selectedRoute, () => props.selectedTrip], updateBusMarkers)
+watch([() => props.selectedRoute, () => props.selectedTripId], updateBusMarkers)
 
 watch(() => store.darkTheme, updateBusMarkers)
 
