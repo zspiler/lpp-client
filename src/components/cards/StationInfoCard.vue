@@ -4,8 +4,8 @@
       <div>
         {{ props.station.name }}
       </div>
-      <div v-if="props.station.trip?.shortName" class="destination-text">
-        To: {{ props.station.trip?.shortName }}
+      <div v-if="props.station.trip?.name" class="destination-text">
+        To: {{ props.station.trip?.name }}
       </div>
     </div>
     <div v-dragscroll class="card-content">

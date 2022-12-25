@@ -59,3 +59,16 @@ export type Route = {
 export type RouteData = {
   data: Route[]
 }
+
+export type Station = {
+  name: string,
+  station_code: string,
+  order_no: number,
+  latitude: number,
+  longitude: number,
+  station_int_id: number,
+}
+
+export type StationData = {
+  data: Station[]
+}

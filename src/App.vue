@@ -62,7 +62,7 @@
         <RouteStationMarkers
           v-if="selectedRoute"
           :selected-route="selectedRoute"
-          :selected-trip="selectedTrip"
+          :selected-trip-id="selectedTrip?.id"
           :selected-station="selectedStation"
           @station-click="selectStation"
         />
@@ -185,20 +185,12 @@ async function fetchActiveRoutes() {
 
       const trip = {
         id: route.trip_id,
-        name: route.route_name,
-        shortName: route.short_route_name,
+        name: route.short_route_name,
       }
-
       if (routes.length > 0 && previousRoute.route_id === route.route_id) {
         previousRoute.trips.push(trip)
       } else {
-        routes.push({
-          route_id: route.route_id,
-          route_name: route.route_name,
-          route_number: route.route_number,
-          short_route_name: route.short_route_name,
-          trips: [trip],
-        })
+        routes.push({ ...route, trips: [trip] })
       }
     })
     activeRoutes.value = routes
@@ -219,9 +211,7 @@ function unselectBus() {
 }
 
 function selectStation(station) {
-  const stationsTrip = selectedRoute.value?.trips.find((trip) => trip.id === station.tripId)
   selectedStation.value = station
-  selectedStation.value.trip = stationsTrip
   mapConfig.value.center = [station.latitude, station.longitude]
 }
 

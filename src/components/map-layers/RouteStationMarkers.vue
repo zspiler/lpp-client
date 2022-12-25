@@ -10,44 +10,49 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import type { Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
-import leaflet from 'leaflet'
+import leaflet, { LeafletEvent } from 'leaflet'
 
-import { stationIcon } from '@/assets/icons/svgIcons.ts'
+import { stationIcon } from '@/assets/icons/svgIcons'
 import { usePreferencesStore } from '@/stores/preferences'
-import axios from '@/api/axios'
-import { routeColors } from '@/colors.ts'
+import { routeColors } from '@/colors'
+import { getStationsOnTrip } from '@/api/api'
+import { Station } from '@/api/types'
+import { StationOnTrip, RouteWithTrips } from '@/types'
 
-const store = usePreferencesStore()
+type StationMarker = {
+  station: Station,
+  color: string,
+}
 
-const props = defineProps({
-  selectedRoute: {
-    type: Object,
-    required: true,
-  },
-  selectedTrip: {
-    type: Object,
-    default: null,
-  },
-  selectedStation: {
-    type: Object,
-    default: null,
-  },
-})
+interface StationsByRoute {
+  [routeNumber: string]: StationOnTrip[];
+}
+
+interface Props {
+  selectedRoute: RouteWithTrips,
+  selectedTripId?: string,
+  selectedStation?: Station,
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits(['stationClick'])
 
-const stations = ref({})
-const stationMarkers = ref([])
-const selectedStation = ref(null)
+const stations: Ref<StationsByRoute> = ref({})
+const stationMarkers: Ref<StationMarker[]> = ref([])
+const selectedStation: Ref<Station | undefined> = ref(undefined)
 
-function getStationZIndex(station) {
+const store = usePreferencesStore()
+
+function getStationZIndex(station: Station) {
   return station.station_code === selectedStation.value?.station_code ? 1000 : null
 }
 
-function getMarkerIcon(marker) {
+function getMarkerIcon(marker: StationMarker) {
   const markerSize = 20
 
   const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code
@@ -66,26 +71,27 @@ function getMarkerIcon(marker) {
   return icon
 }
 
-function onStationClick(e) {
-  const stationCode = e.target.options.options.station.station_code
+function onStationClick(e: LeafletEvent) {
+  const stationCode = e.target?.options?.options?.station?.station_code
+  if (!stationCode) return
+
   const stationsOnSelectedRoute = stations.value[props.selectedRoute.route_number]
   selectedStation.value = stationsOnSelectedRoute.find((station) => station.station_code === stationCode)
-  emit('stationClick', selectedStation.value)
+
+  emit('stationClick', { ...selectedStation.value })
 }
 
 function updateStationMarkers() {
   stationMarkers.value = []
+
   stationMarkers.value = stations.value[props.selectedRoute.route_number]
-    .filter((station) => !props.selectedTrip || station.tripId === props.selectedTrip.id)
-    .reduce((acc, station) => {
+    .filter((station) => !props.selectedTripId || station.trip.id === props.selectedTripId)
+    .reduce<StationMarker[]>((acc, station) => {
       // filter out duplicate stations
-      if (acc.find((s) => s.station.station_code === station.station_code) !== undefined) return acc
+      if (acc.find((s) => s.station.station_code === station.station_code)) return acc
 
       const stationColor = routeColors[props.selectedRoute.route_number]
-      const marker = {
-        station,
-        color: stationColor,
-      }
+      const marker = { station, color: stationColor }
       acc.push(marker)
       return acc
     }, [])
@@ -93,27 +99,22 @@ function updateStationMarkers() {
 
 async function fetchStationsOnSelectedRoute() {
   const selectedTrips = props.selectedRoute.trips
-    .map((trip) => ({
-      tripId: trip.id, routeId: props.selectedRoute.route_id,
-    }))
-    .filter((trip) => !props.selectedTrip || trip.tripId === props.selectedTrip.id)
+    .filter((trip) => !props.selectedTripId || trip.id === props.selectedTripId)
 
-  const requests = selectedTrips.map((trip) => axios.get(`route/stations-on-route?trip-id=${trip.tripId}`))
+  const requests = selectedTrips.map((trip) => getStationsOnTrip(trip.id))
 
   Promise.all(requests).then((responses) => {
     responses.forEach((res, index) => {
-      const data = res.data.data
-      const tripId = selectedTrips[index].tripId
-      const selectedRouteNumber = props.selectedRoute.route_number
+      const fetchedStations = res.data
+      const routeNumber = props.selectedRoute.route_number
 
-      const fetchedStations = data.map((station) => ({
-        ...station, tripId,
-      }))
+      const fetchedStationsWithTrip = fetchedStations
+        .map((station) => ({ ...station, trip: selectedTrips[index] }))
 
-      if (selectedRouteNumber in stations.value) {
-        stations.value[selectedRouteNumber] = stations.value[selectedRouteNumber].concat(fetchedStations)
+      if (routeNumber in stations.value) {
+        stations.value[routeNumber] = stations.value[routeNumber].concat(fetchedStationsWithTrip)
       } else {
-        stations.value[selectedRouteNumber] = fetchedStations
+        stations.value[routeNumber] = fetchedStationsWithTrip
       }
     })
     updateStationMarkers()
@@ -133,7 +134,7 @@ onMounted(() => {
   updateStations()
 })
 
-watch([() => props.selectedRoute, () => props.selectedTrip], updateStations)
+watch([() => props.selectedRoute, () => props.selectedTripId], updateStations)
 
 watch(() => props.selectedStation, () => {
   selectedStation.value = props.selectedStation
