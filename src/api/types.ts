@@ -15,7 +15,7 @@ export type Arrival = {
   };
 };
 
-export type ArrivalData = {
+export type ArrivalsResponse = {
   data: {
     station: {
       ref_id: string,
@@ -42,7 +42,7 @@ export type Bus = {
   cardinal_direction: number
 }
 
-export type BusData = {
+export type BusesResponse = {
   data: Bus[]
 }
 
@@ -56,19 +56,40 @@ export type Route = {
   geojson_shape?: GeoJsonObject
 }
 
-export type RouteData = {
+export type RoutesResponse = {
   data: Route[]
 }
 
 export type Station = {
+  code: string,
   name: string,
-  station_code: string,
-  order_no: number,
   latitude: number,
   longitude: number,
-  station_int_id: number,
 }
 
-export type StationData = {
+export type StationsData = {
   data: Station[]
 }
+
+export type StationsOnTripResponse = {
+  data: Array<{
+    latitude: number,
+    longitude: number,
+    name: string,
+    int_id: string,
+    ref_id: number,
+    distance: number,
+  }>
+}
+
+export type StationsInRangeResponse = {
+  data: Array<{
+    latitude: number,
+    longitude: number,
+    name: string,
+    station_code: string,
+    order_no: number,
+  }>
+}
+
+export type StationsResponse = StationsOnTripResponse | StationsInRangeResponse

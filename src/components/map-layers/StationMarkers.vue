@@ -2,7 +2,7 @@
   <div v-if="visible">
     <LMarker
       v-for="marker in stationMarkers"
-      :key="marker.station.station_code"
+      :key="marker.station.code"
       :lat-lng="[marker.station.latitude, marker.station.longitude]"
       :icon="getMarkerIcon(marker)"
       :options="{ station: marker.station }"
@@ -12,42 +12,42 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
+import type { Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
-import leaflet from 'leaflet'
+import leaflet, { LeafletEvent } from 'leaflet'
 import { useToast } from 'vue-toastification'
 
-import axios from '@/api/axios'
-import { stationIcon } from '@/assets/icons/svgIcons.ts'
+import { stationIcon } from '@/assets/icons/svgIcons'
 import { usePreferencesStore } from '@/stores/preferences'
+import { getStationsInRange } from '@/api/api'
+import { Location } from '@/types'
+import { Station } from '@/api/types'
 
 const maxDistanceToStation = 2000
 
-const store = usePreferencesStore()
+type StationMarker = {
+  station: Station,
+  color: string,
+}
 
-const props = defineProps({
-  location: {
-    type: Object,
-    required: true,
-  },
-  visible: {
-    type: Boolean,
-    default: true,
-  },
-  selectedStation: {
-    type: Object,
-    default: null,
-  },
-})
+interface Props {
+  location: Location,
+  visible: boolean,
+  selectedStation?: Station,
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits(['stationClick', 'loadedStations', 'loadingStations'])
 
-const stationMarkers = ref([])
-const selectedStation = ref(null)
-const stations = ref([])
+const stations: Ref<Station[]> = ref([])
+const stationMarkers: Ref<StationMarker[]> = ref([])
+const selectedStation: Ref<Station | undefined> = ref(undefined)
 
 const toast = useToast()
+const store = usePreferencesStore()
 
 const nearbyStations = computed(() => {
   return stations.value.filter((station) => {
@@ -57,14 +57,14 @@ const nearbyStations = computed(() => {
   })
 })
 
-function getStationZIndex(station) {
-  return station.station_code === selectedStation.value?.station_code ? 1000 : null
+function getStationZIndex(station: Station) {
+  return station.code === selectedStation.value?.code ? 1000 : null
 }
 
-function getMarkerIcon(marker) {
+function getMarkerIcon(marker: StationMarker) {
   const markerSize = 20
 
-  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code
+  const isMarkerSelected = marker.station.code === selectedStation.value?.code
 
   const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
   const color = isMarkerSelected ? selectedMarkerColor : marker.color
@@ -78,25 +78,19 @@ function getMarkerIcon(marker) {
   return icon
 }
 
-function onStationClick(e) {
-  const stationCode = e.target.options.options.station.station_code
-  selectedStation.value = stations.value.find((s) => s.station_code === stationCode)
+function onStationClick(e: LeafletEvent) {
+  const stationCode = e.target.options.options.station.code
+  selectedStation.value = stations.value.find((station) => station.code === stationCode)
   emit('stationClick', selectedStation.value)
 }
 
 function updateStationMarkers() {
-  const stationCodes = stationMarkers.value.map((marker) => marker.station.station_code)
+  const stationCodes = stationMarkers.value.map((marker) => marker.station.code)
   const displayedStations = new Set(stationCodes)
 
   const newNearbyStationMarkers = nearbyStations.value
-    .filter((station) => !displayedStations.has(station.station_code))
-    .map((station) => {
-      const marker = {
-        station,
-        color: 'rgba(0, 106, 46, 0.8)',
-      }
-      return marker
-    })
+    .filter((station) => !displayedStations.has(station.code))
+    .map((station) => ({ station, color: 'rgba(0, 106, 46, 0.8)' }))
 
   stationMarkers.value = stationMarkers.value.concat(newNearbyStationMarkers)
 }
@@ -104,10 +98,8 @@ function updateStationMarkers() {
 async function fetchAllStations() {
   try {
     emit('loadingStations')
-    const res = await axios.get(`station/stations-in-range?latitude=${props.location.lat}&longitude=${props.location.lng}&radius=30000`)
-    stations.value = res.data.data.map(((station) => ({
-      ...station, station_code: station.ref_id,
-    })))
+    const response = await getStationsInRange(props.location.lat, props.location.lng)
+    stations.value = response.data
     updateStationMarkers()
     emit('loadedStations')
   } catch {

@@ -23,7 +23,7 @@ import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
 import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons'
 import { getBusesOnRoute } from '@/api/api'
-import { Route, BusData, Bus } from '@/api/types'
+import { Route, BusesResponse, Bus } from '@/api/types'
 
 type BusMarker = {
   bus: Bus,
@@ -102,7 +102,7 @@ function updateBusMarkers() {
 }
 
 function fetchBuses() {
-  const requests = props.activeRoutes.reduce<Promise<BusData>[]>((acc, route) => {
+  const requests = props.activeRoutes.reduce<Promise<BusesResponse>[]>((acc, route) => {
     if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
       acc.push(getBusesOnRoute(route.route_number))
     }

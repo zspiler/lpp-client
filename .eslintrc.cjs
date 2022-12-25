@@ -33,7 +33,7 @@ module.exports = {
     'semi': ['error', 'never'],
     'vue/max-len': [
       'error',
-      110,
+      112,
       2,
       {
         'ignoreUrls': true,
@@ -59,6 +59,7 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-explicit-any': 'error',
+    'camelcase': 'off',
   },
   settings: {
     'import/resolver': {

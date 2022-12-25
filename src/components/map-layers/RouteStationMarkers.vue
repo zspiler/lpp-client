@@ -1,7 +1,7 @@
 <template>
   <LMarker
     v-for="marker in stationMarkers"
-    :key="marker.station.station_code"
+    :key="marker.station.code"
     :lat-lng="[marker.station.latitude, marker.station.longitude]"
     :icon="getMarkerIcon(marker)"
     :options="{ station: marker.station }"
@@ -21,11 +21,15 @@ import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
 import { getStationsOnTrip } from '@/api/api'
 import { Station } from '@/api/types'
-import { StationOnTrip, RouteWithTrips } from '@/types'
+import { RouteWithTrips, Trip } from '@/types'
 
 type StationMarker = {
   station: Station,
   color: string,
+}
+
+type StationOnTrip = Station & {
+  trip: Trip
 }
 
 interface StationsByRoute {
@@ -49,13 +53,13 @@ const selectedStation: Ref<Station | undefined> = ref(undefined)
 const store = usePreferencesStore()
 
 function getStationZIndex(station: Station) {
-  return station.station_code === selectedStation.value?.station_code ? 1000 : null
+  return station.code === selectedStation.value?.code ? 1000 : null
 }
 
 function getMarkerIcon(marker: StationMarker) {
   const markerSize = 20
 
-  const isMarkerSelected = marker.station.station_code === selectedStation.value?.station_code
+  const isMarkerSelected = marker.station.code === selectedStation.value?.code
 
   const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
   const color = isMarkerSelected ? selectedMarkerColor : marker.color
@@ -72,11 +76,11 @@ function getMarkerIcon(marker: StationMarker) {
 }
 
 function onStationClick(e: LeafletEvent) {
-  const stationCode = e.target?.options?.options?.station?.station_code
+  const stationCode = e.target?.options?.options?.station?.code
   if (!stationCode) return
 
   const stationsOnSelectedRoute = stations.value[props.selectedRoute.route_number]
-  selectedStation.value = stationsOnSelectedRoute.find((station) => station.station_code === stationCode)
+  selectedStation.value = stationsOnSelectedRoute.find((station) => station.code === stationCode)
 
   emit('stationClick', { ...selectedStation.value })
 }
@@ -88,7 +92,7 @@ function updateStationMarkers() {
     .filter((station) => !props.selectedTripId || station.trip.id === props.selectedTripId)
     .reduce<StationMarker[]>((acc, station) => {
       // filter out duplicate stations
-      if (acc.find((s) => s.station.station_code === station.station_code)) return acc
+      if (acc.find((marker) => marker.station.code === station.code)) return acc
 
       const stationColor = routeColors[props.selectedRoute.route_number]
       const marker = { station, color: stationColor }
@@ -104,12 +108,12 @@ async function fetchStationsOnSelectedRoute() {
   const requests = selectedTrips.map((trip) => getStationsOnTrip(trip.id))
 
   Promise.all(requests).then((responses) => {
-    responses.forEach((res, index) => {
-      const fetchedStations = res.data
-      const routeNumber = props.selectedRoute.route_number
+    responses.forEach((response, index) => {
+      const fetchedStationsWithTrip = response.data.map(
+        (station) => ({ ...station, trip: selectedTrips[index] }),
+      )
 
-      const fetchedStationsWithTrip = fetchedStations
-        .map((station) => ({ ...station, trip: selectedTrips[index] }))
+      const routeNumber = props.selectedRoute.route_number
 
       if (routeNumber in stations.value) {
         stations.value[routeNumber] = stations.value[routeNumber].concat(fetchedStationsWithTrip)

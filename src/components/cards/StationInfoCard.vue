@@ -88,7 +88,7 @@ function closeCard() {
 
 async function fetchArrivals() {
   try {
-    const response = await getArrivals(props.station.station_code)
+    const response = await getArrivals(props.station.code)
     const arrivalData = response.data
 
     let previousEstimatedTime: number
