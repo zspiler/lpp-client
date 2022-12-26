@@ -6,17 +6,17 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet from 'leaflet'
+import { Location } from '@/types'
 
-const props = defineProps({
-  location: {
-    type: Object,
-    required: true,
-  },
-})
+interface Props {
+  location: Location
+}
+
+const props = defineProps<Props>()
 
 const location = computed(() => props.location)
 
@@ -49,7 +49,6 @@ function getMarkerIcon() {
 </script>
 
 <style>
-
 .user-marker {
   box-shadow: 0px 0px 3px 3px rgba(0, 0, 0, 0.2);
   border-radius: 50%;
