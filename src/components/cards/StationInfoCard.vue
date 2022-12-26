@@ -51,7 +51,7 @@ import { useToast } from 'vue-toastification'
 
 import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
 import { routeColors } from '@/colors'
-import { compareRouteNumbers } from '@/utils/index'
+import { compareRouteNumbers } from '@/utils'
 
 import { getArrivals } from '@/api/api'
 import { Arrival } from '@/api/types'
