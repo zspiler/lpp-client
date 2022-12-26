@@ -106,8 +106,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import type { Ref } from 'vue'
 
 import 'leaflet/dist/leaflet.css'
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'
@@ -131,13 +132,14 @@ import UserLocationMarker from '@/components/map-layers/UserLocationMarker.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 import { useGeolocation } from '@/composables/geolocation'
 import RouteStationMarkers from '@/components/map-layers/RouteStationMarkers.vue'
-import axios from '@/api/axios'
+import { Location } from './types'
+import { getActiveRoutes } from '@/api/api'
+import { Bus, Station } from '@/api/types'
+import { RouteWithTrips, Trip } from '@/types'
 
 const store = usePreferencesStore()
 
-const ljubljanaCenter = {
-  lat: 46.0577, lng: 14.5057,
-}
+const ljubljanaCenter: Location = { lat: 46.0577, lng: 14.5057 }
 
 const mapConfig = ref({
   zoom: 15,
@@ -152,20 +154,20 @@ const mapConfig = ref({
 
 const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`
 
-const activeRoutes = ref([])
-const selectedRoute = ref(null)
-const selectedTrip = ref(null)
+const activeRoutes: Ref<RouteWithTrips[]> = ref([])
+const selectedRoute: Ref<RouteWithTrips | undefined> = ref(undefined)
+const selectedTrip: Ref<Trip | undefined> = ref(undefined)
 const loadingBuses = ref(false)
 const loadingRouteShapes = ref(false)
 const loadingActiveRoutes = ref(true)
-const selectedBus = ref(null)
-const selectedStation = ref(null)
+const selectedBus: Ref<Bus | undefined> = ref(undefined)
+const selectedStation: Ref<Station | undefined> = ref(undefined)
 const mapCenter = ref(ljubljanaCenter)
 const map = ref(null)
 const requestingLocation = ref(false)
 const initialLoading = ref(true)
 
-let leafletTilePane
+let leafletTilePane: HTMLElement | null
 
 const { userLocation, loadingUserLocation, userLocationError } = useGeolocation(requestingLocation)
 const toast = useToast()
@@ -176,12 +178,12 @@ const mapContainerClass = computed(() => {
 
 async function fetchActiveRoutes() {
   try {
-    const res = await axios.get('route/active-routes')
-    const fetchedRoutes = res.data.data
-    const routes = []
+    const response = await getActiveRoutes()
+    const fetchedRoutes = response.data
+    const routes: RouteWithTrips[] = []
 
     fetchedRoutes.forEach((route) => {
-      const previousRoute = routes[routes.length - 1]
+      const previousRoute: RouteWithTrips = { ...routes[routes.length - 1], trips: [] }
 
       const trip = {
         id: route.trip_id,
@@ -201,29 +203,31 @@ async function fetchActiveRoutes() {
   }
 }
 
-function selectBus(bus) {
+function selectBus(bus: Bus) {
   selectedBus.value = bus
   mapConfig.value.center = [bus.latitude, bus.longitude]
 }
 
 function unselectBus() {
-  selectedBus.value = null
+  selectedBus.value = undefined
 }
 
-function selectStation(station) {
+function selectStation(station: Station) {
   selectedStation.value = station
   mapConfig.value.center = [station.latitude, station.longitude]
 }
 
 function unselectStation() {
-  selectedStation.value = null
+  selectedStation.value = undefined
 }
 
 function updateMapTheme() {
-  if (store.darkTheme) {
-    leafletTilePane.classList.add('dark-map-tiles')
-  } else {
-    leafletTilePane.classList.remove('dark-map-tiles')
+  if (leafletTilePane) {
+    if (store.darkTheme) {
+      leafletTilePane.classList.add('dark-map-tiles')
+    } else {
+      leafletTilePane.classList.remove('dark-map-tiles')
+    } 
   }
 }
 
@@ -232,13 +236,13 @@ function initTilePane() {
   updateMapTheme()
 }
 
-function onMapMove(newCenter) {
+function onMapMove(newCenter: Location) {
   mapCenter.value = newCenter
 }
 
-function onSelectedRouteToggle(routeNumber) {
+function onSelectedRouteToggle(routeNumber: string) {
   if (selectedRoute.value?.route_number === routeNumber) {
-    selectedRoute.value = null
+    selectedRoute.value = undefined
     return
   }
   const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber)
@@ -248,6 +252,7 @@ function onSelectedRouteToggle(routeNumber) {
 }
 
 function focusMapOnUserLocation() {
+  if (!userLocation.value) return
   const { lat, lng } = userLocation.value
   const [currentMapLat, currentMapLng] = mapConfig.value.center
   if (currentMapLat === lat && currentMapLng === lng) {
@@ -267,7 +272,7 @@ function getUserLocation() {
 
   if (userLocationError.value && userLocationError.value.code === 1) {
     toast.info('To display your location on the map you must allow the browser to use your location')
-    userLocation.value = undefined
+    userLocation.value = null
   }
 
   requestingLocation.value = true
@@ -283,12 +288,12 @@ function onLoadedBuses() {
 }
 
 function clearSelectedTrip() {
-  selectedTrip.value = null
+  selectedTrip.value = undefined
 }
 
 function clearSelectedRoute() {
-  selectedTrip.value = null
-  selectedRoute.value = null
+  selectedTrip.value = undefined
+  selectedRoute.value = undefined
 }
 
 function onLoadedStations() {
@@ -300,23 +305,25 @@ onMounted(() => {
 })
 
 watch(selectedRoute, (newSelectedRoute) => {
-  selectedTrip.value = null
+  selectedTrip.value = undefined
 
   if (selectedBus.value
   && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
-    selectedBus.value = null
+    selectedBus.value = undefined
   }
 })
 
 watch(() => store.darkTheme, updateMapTheme)
 
 watch(() => store.isInStationsMode, (isInStationsMode) => {
-  if (isInStationsMode) selectedBus.value = null
+  if (isInStationsMode) selectedBus.value = undefined
 })
 
 watch(userLocation, (newUserLocation) => {
-  const { lat, lng } = newUserLocation
-  mapConfig.value.center = [lat, lng]
+  if (newUserLocation) {
+    const { lat, lng } = newUserLocation
+    mapConfig.value.center = [lat, lng]
+  }
 })
 
 </script>

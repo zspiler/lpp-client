@@ -2,7 +2,7 @@ import { ref, onUnmounted, unref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { Location } from '@/types'
 
-export function useGeolocation(requestingLocation: Ref<boolean>, geolocationOptions: PositionOptions) {
+export function useGeolocation(requestingLocation: Ref<boolean>, geolocationOptions?: PositionOptions) {
   let handlerId: number
   const userLocation: Ref<Location | null> = ref(null)
   const userLocationError: Ref<GeolocationPositionError | null> = ref(null)

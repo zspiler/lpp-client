@@ -21,7 +21,7 @@ import { useToast } from 'vue-toastification'
 import { GeoJsonObject } from 'geojson'
 
 import { routeColors } from '@/colors'
-import { getRouteShape } from '@/api/api'
+import { getRouteShapes } from '@/api/api'
 import { Route } from '@/api/types'
 
 type RouteShapesByRoute = {
@@ -59,10 +59,10 @@ const selectedRouteShapes = computed(() => {
   ))
 })
 
-async function fetchSelectedRoutesShape() {
+async function fetchSelectedRouteShapes() {
   emit('loading')
   try {
-    const response = await getRouteShape(props.selectedRoute.route_id)
+    const response = await getRouteShapes(props.selectedRoute.route_id)
     const routeShapeData = response.data
 
     routeShapeData.forEach((trip) => {
@@ -88,6 +88,6 @@ async function fetchSelectedRoutesShape() {
 
 watchEffect(() => {
   if (props.selectedRoute.route_number in routeShapes.value) return
-  fetchSelectedRoutesShape()
+  fetchSelectedRouteShapes()
 })
 </script>
