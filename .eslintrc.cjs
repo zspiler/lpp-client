@@ -60,6 +60,7 @@ module.exports = {
     ],
     '@typescript-eslint/no-explicit-any': 'error',
     'camelcase': 'off',
+    'no-undef': 'warn',
   },
   settings: {
     'import/resolver': {
