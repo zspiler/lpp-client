@@ -14,8 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, computed } from 'vue'
-import type { Ref } from 'vue'
+import { ref, watchEffect, computed, Ref } from 'vue'
 import { LGeoJson } from '@vue-leaflet/vue-leaflet'
 import { useToast } from 'vue-toastification'
 import { GeoJsonObject } from 'geojson'

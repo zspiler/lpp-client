@@ -11,8 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import type { Ref } from 'vue'
+import { ref, watch, onMounted, Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet, { LeafletEvent } from 'leaflet'
 

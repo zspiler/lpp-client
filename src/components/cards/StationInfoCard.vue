@@ -45,8 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue'
-import type { Ref } from 'vue'
+import { watch, ref, onMounted, onUnmounted, computed, Ref } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'

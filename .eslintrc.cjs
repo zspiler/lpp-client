@@ -9,6 +9,8 @@ module.exports = {
   },
   extends: [
     'plugin:vue/vue3-strongly-recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
     '@vue/airbnb',
   ],
   plugins: ['@typescript-eslint'],
@@ -58,6 +60,7 @@ module.exports = {
         'tsx': 'never',
       },
     ],
+    'max-len': ['error', { 'code': 112, 'ignoreTemplateLiterals': true, 'ignoreStrings': true }],
     '@typescript-eslint/no-explicit-any': 'error',
     'camelcase': 'off',
     'no-undef': 'warn',

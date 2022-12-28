@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import type { Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet, { LeafletEvent } from 'leaflet'
 import { useToast } from 'vue-toastification'
@@ -111,7 +110,8 @@ function fetchBuses() {
 
   Promise.all(requests).then((responses) => {
     responses.forEach((res) => {
-      res.data.forEach((bus) => {
+      const fetchedBuses = res.data
+      fetchedBuses.forEach((bus) => {
         buses.value[bus.bus_name] = bus
       })
     })

@@ -107,8 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import type { Ref } from 'vue'
+import { ref, onMounted, computed, watch, Ref } from 'vue'
 
 import 'leaflet/dist/leaflet.css'
 import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'

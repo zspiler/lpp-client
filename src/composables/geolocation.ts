@@ -1,5 +1,4 @@
-import { ref, onUnmounted, unref, watch } from 'vue'
-import type { Ref } from 'vue'
+import { ref, onUnmounted, unref, watch, Ref } from 'vue'
 import { Location } from '@/types'
 
 export function useGeolocation(requestingLocation: Ref<boolean>, geolocationOptions?: PositionOptions) {

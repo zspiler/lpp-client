@@ -1,6 +1,12 @@
 import axios from '@/api/axios'
 import { AxiosResponse } from 'axios'
-import { ArrivalsResponse, BusesResponse, RoutesResponse, StationsOnTripResponse, StationsInRangeResponse } from '@/api/types'
+import {
+  ArrivalsResponse,
+  BusesResponse,
+  RoutesResponse,
+  StationsOnTripResponse,
+  StationsInRangeResponse,
+} from '@/api/types'
 import { mapToStationData } from '@/api/mappers'
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data
@@ -13,3 +19,5 @@ export const getStationsInRange = (latitude: number, longitude: number, radius =
   return axios.get<StationsInRangeResponse>(`station/stations-in-range?latitude=${latitude}&longitude=${longitude}&radius=${radius}`).then(responseBody).then(mapToStationData)
 }
 export const getActiveRoutes = () => axios.get<RoutesResponse>('route/active-routes').then(responseBody)
+
+const foo = 42

@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
-import type { Ref } from 'vue'
+import { ref, watch, onMounted, computed, Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet, { LeafletEvent } from 'leaflet'
 import { useToast } from 'vue-toastification'
@@ -69,7 +68,9 @@ function getMarkerIcon(marker: StationMarker) {
   const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
   const color = isMarkerSelected ? selectedMarkerColor : marker.color
   const icon = leaflet.divIcon({
-    className: isMarkerSelected ? 'selected-station-icon fade-in-station-icon' : 'station-icon fade-in-station-icon',
+    className: isMarkerSelected
+      ? 'selected-station-icon fade-in-station-icon'
+      : 'station-icon fade-in-station-icon',
     html: leaflet.Util.template(stationIcon, { color }),
     iconSize: [markerSize, markerSize],
     iconAnchor: [markerSize / 2, markerSize / 2],

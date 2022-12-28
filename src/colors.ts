@@ -1,8 +1,4 @@
-interface RouteColors {
-  [index: string]: string;
-}
-
-export const routeColors: RouteColors = {
+export const routeColors: Record<string, string> = {
   '1': '#6F1250',
   '2': '#4C20E7',
   '3': '#60D818',
