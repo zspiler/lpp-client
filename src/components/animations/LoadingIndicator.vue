@@ -1,9 +1,14 @@
 <template>
-  <div v-show="props.delayed ? showLoader : loading" :class="{ fixed: props.fixed }" />
+  <div
+    v-show="props.delayed ? showLoader : loading"
+    class="loader"
+    :class="{ fixed: props.fixed, dark: store.darkTheme }"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
   loading: {
@@ -19,6 +24,8 @@ const props = defineProps({
     default: false,
   },
 })
+
+const store = usePreferencesStore()
 
 const showLoader = ref(false)
 
@@ -40,23 +47,29 @@ if (props.delayed) {
 </script>
 
 <style scoped>
+
 .fixed {
   position: fixed;
 }
-div {
-  width: 30px;
-  height: 30px;
-  margin:auto;
-  left:0;
-  right:0;
-  top:0;
-  bottom:0;
-  /* border: 12px solid rgba(81, 81, 81, 0.5); */
-  border: 8px solid rgba(208, 208, 208, 0.1);
-  border-top: 8px solid rgba(0, 128, 0, 0.3);
+
+.loader {
+  width: 35px;
+  height: 35px;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border: 6px solid rgba(0, 0, 0, 0.2);
+  border-top: 6px solid rgba(0, 0, 0, 0.4);
   border-radius: 50%;
-  animation: spin 0.75s ease-in-out infinite;
+  animation: spin 0.85s ease-in-out infinite;
   z-index: 9000;
+}
+
+.loader.dark {
+  border-color: rgba(255, 255, 255, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.8);
 }
 
 @keyframes spin {
