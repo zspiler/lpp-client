@@ -14,13 +14,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { routeColors } from '@/colors'
+import { Bus } from '@/api/types'
 
-const props = defineProps({
-  bus: {
-    type: Object,
-    required: true,
-  },
-})
+interface Props {
+  bus: Bus
+}
+
+const props = defineProps<Props>()
+
 const emit = defineEmits(['close'])
 
 const color = computed(() => {

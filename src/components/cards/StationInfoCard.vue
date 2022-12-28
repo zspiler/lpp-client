@@ -4,7 +4,7 @@
       <div>
         {{ props.station.name }}
       </div>
-      <div v-if="props.station.trip?.name" class="destination-text">
+      <div v-if="'trip' in props.station" class="destination-text">
         To: {{ props.station.trip?.name }}
       </div>
     </div>
@@ -54,23 +54,20 @@ import { routeColors } from '@/colors'
 import { compareRouteNumbers } from '@/utils'
 
 import { getArrivals } from '@/api/api'
-import { Arrival } from '@/api/types'
+import { Arrival, Station } from '@/api/types'
+import { RouteWithTrips, StationOnTrip } from '@/types'
 
 type ArrivalGroup = {
   eta: number,
   arrivals: Arrival[]
 }
 
-const props = defineProps({
-  station: {
-    type: Object,
-    required: true,
-  },
-  selectedRoute: {
-    type: Object,
-    default: null,
-  },
-})
+interface Props {
+  station: Station | StationOnTrip
+  selectedRoute?: RouteWithTrips
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits(['close', 'toggleSelectedRoute'])
 

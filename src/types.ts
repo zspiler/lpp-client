@@ -1,4 +1,4 @@
-import { Route } from '@/api/types'
+import { Route, Station } from '@/api/types'
 
 export type Trip = {
   id: string,
@@ -7,6 +7,10 @@ export type Trip = {
 
 export type RouteWithTrips = Route & {
   trips: Trip[]
+}
+
+export type StationOnTrip = Station & {
+  trip: Trip
 }
 
 export type Location = {

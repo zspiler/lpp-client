@@ -21,15 +21,11 @@ import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
 import { getStationsOnTrip } from '@/api/api'
 import { Station } from '@/api/types'
-import { RouteWithTrips, Trip } from '@/types'
+import { RouteWithTrips, StationOnTrip } from '@/types'
 
 type StationMarker = {
   station: Station,
   color: string,
-}
-
-type StationOnTrip = Station & {
-  trip: Trip
 }
 
 interface StationsByRoute {

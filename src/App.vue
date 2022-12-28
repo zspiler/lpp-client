@@ -132,10 +132,9 @@ import UserLocationMarker from '@/components/map-layers/UserLocationMarker.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 import { useGeolocation } from '@/composables/geolocation'
 import RouteStationMarkers from '@/components/map-layers/RouteStationMarkers.vue'
-import { Location } from './types'
 import { getActiveRoutes } from '@/api/api'
 import { Bus, Station } from '@/api/types'
-import { RouteWithTrips, Trip } from '@/types'
+import { RouteWithTrips, Trip, Location, StationOnTrip } from '@/types'
 
 const store = usePreferencesStore()
 
@@ -161,7 +160,7 @@ const loadingBuses = ref(false)
 const loadingRouteShapes = ref(false)
 const loadingActiveRoutes = ref(true)
 const selectedBus: Ref<Bus | undefined> = ref(undefined)
-const selectedStation: Ref<Station | undefined> = ref(undefined)
+const selectedStation: Ref<Station | StationOnTrip | undefined> = ref(undefined)
 const mapCenter = ref(ljubljanaCenter)
 const map = ref(null)
 const requestingLocation = ref(false)
@@ -227,7 +226,7 @@ function updateMapTheme() {
       leafletTilePane.classList.add('dark-map-tiles')
     } else {
       leafletTilePane.classList.remove('dark-map-tiles')
-    } 
+    }
   }
 }
 
