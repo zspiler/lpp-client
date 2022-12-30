@@ -19,5 +19,3 @@ export const getStationsInRange = (latitude: number, longitude: number, radius =
   return axios.get<StationsInRangeResponse>(`station/stations-in-range?latitude=${latitude}&longitude=${longitude}&radius=${radius}`).then(responseBody).then(mapToStationData)
 }
 export const getActiveRoutes = () => axios.get<RoutesResponse>('route/active-routes').then(responseBody)
-
-const foo = 42
