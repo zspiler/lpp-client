@@ -26,10 +26,10 @@
 import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
-  active: {
-    type: Boolean,
-    default: false,
-  },
+    active: {
+        type: Boolean,
+        default: false,
+    },
 })
 
 const store = usePreferencesStore()

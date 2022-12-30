@@ -55,10 +55,10 @@
 
 <script setup lang="ts">
 const props = defineProps({
-  loading: {
-    type: Boolean,
-    required: true,
-  },
+    loading: {
+        type: Boolean,
+        required: true,
+    },
 })
 </script>
 

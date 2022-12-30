@@ -21,9 +21,9 @@ const props = defineProps<Props>()
 const location = computed(() => props.location)
 
 function getMarkerIcon() {
-  const markerSize = 25
+    const markerSize = 25
 
-  const svg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    const svg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
        <defs>
           <linearGradient id="myGradient" gradientTransform="rotate(90)">
             <stop offset="0%" stop-color="blue">
@@ -37,14 +37,14 @@ function getMarkerIcon() {
         <circle cx="50" cy="50" r="50" fill="url('#myGradient')" />
        </svg>`
 
-  const icon = leaflet.divIcon({
-    className: 'user-marker',
-    html: svg,
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [markerSize / 2, markerSize / 2],
-  })
+    const icon = leaflet.divIcon({
+        className: 'user-marker',
+        html: svg,
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
+    })
 
-  return icon
+    return icon
 }
 </script>
 

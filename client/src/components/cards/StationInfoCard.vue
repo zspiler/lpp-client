@@ -79,64 +79,64 @@ const toast = useToast()
 const selectedRouteNumber = computed(() => props.selectedRoute?.route_number)
 
 function closeCard() {
-  emit('close')
+    emit('close')
 }
 
 async function fetchArrivals() {
-  try {
-    const response = await getArrivals(props.station.code)
-    const arrivalData = response.data
+    try {
+        const response = await getArrivals(props.station.code)
+        const arrivalData = response.data
 
-    let previousEstimatedTime: number
-    const arrivalsByEstimatedTime: ArrivalGroup[] = []
+        let previousEstimatedTime: number
+        const arrivalsByEstimatedTime: ArrivalGroup[] = []
 
-    arrivalData.arrivals.forEach((arrival) => {
-      const estimatedTime = arrival.eta_min
-      if (estimatedTime !== previousEstimatedTime) {
-        arrivalsByEstimatedTime.push({
-          eta: arrival.eta_min,
-          arrivals: [arrival],
+        arrivalData.arrivals.forEach((arrival) => {
+            const estimatedTime = arrival.eta_min
+            if (estimatedTime !== previousEstimatedTime) {
+                arrivalsByEstimatedTime.push({
+                    eta: arrival.eta_min,
+                    arrivals: [arrival],
+                })
+                previousEstimatedTime = estimatedTime
+            } else {
+                arrivalsByEstimatedTime[arrivalsByEstimatedTime.length - 1].arrivals.push(arrival)
+            }
         })
-        previousEstimatedTime = estimatedTime
-      } else {
-        arrivalsByEstimatedTime[arrivalsByEstimatedTime.length - 1].arrivals.push(arrival)
-      }
-    })
 
-    arrivalsByEstimatedTime.forEach((arrivalGroup) => {
-      arrivalGroup.arrivals.sort((a, b) => compareRouteNumbers(a.route_name, b.route_name))
-    })
+        arrivalsByEstimatedTime.forEach((arrivalGroup) => {
+            arrivalGroup.arrivals.sort((a, b) => compareRouteNumbers(a.route_name, b.route_name))
+        })
 
-    arrivals.value = arrivalsByEstimatedTime
-    loading.value = false
-  } catch {
-    toast.error('Error fetching arrival data')
-    if (fetchInterval.value) {
-      clearInterval(fetchInterval.value)
+        arrivals.value = arrivalsByEstimatedTime
+        loading.value = false
+    } catch {
+        toast.error('Error fetching arrival data')
+        if (fetchInterval.value) {
+            clearInterval(fetchInterval.value)
+        }
+        loading.value = false
     }
-    loading.value = false
-  }
 }
 
 function selectArrival(arrival: Arrival) {
-  emit('toggleSelectedRoute', arrival.route_name)
+    emit('toggleSelectedRoute', arrival.route_name)
 }
 
 onMounted(() => {
-  loading.value = true
-  fetchInterval.value = setInterval(fetchArrivals, 10000)
-  fetchArrivals()
+    loading.value = true
+    fetchInterval.value = setInterval(fetchArrivals, 10000)
+    fetchArrivals()
 })
 
 onUnmounted(() => {
-  if (fetchInterval.value) {
-    clearInterval(fetchInterval.value)
-  }
+    if (fetchInterval.value) {
+        clearInterval(fetchInterval.value)
+    }
 })
 
 watch(
-  () => props.station,
-  fetchArrivals,
+    () => props.station,
+    fetchArrivals,
 )
 
 </script>

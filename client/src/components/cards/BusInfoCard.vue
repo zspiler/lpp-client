@@ -25,11 +25,11 @@ const props = defineProps<Props>()
 const emit = defineEmits(['close'])
 
 const color = computed(() => {
-  return routeColors[props.bus.route_number]
+    return routeColors[props.bus.route_number]
 })
 
 function closeCard() {
-  emit('close')
+    emit('close')
 }
 </script>
 

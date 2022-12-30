@@ -31,6 +31,6 @@ import { usePreferencesStore } from '@/stores/preferences'
 const store = usePreferencesStore()
 
 function toggleTheme() {
-  store.darkTheme = !store.darkTheme
+    store.darkTheme = !store.darkTheme
 }
 </script>

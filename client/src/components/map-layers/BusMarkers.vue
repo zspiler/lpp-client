@@ -50,93 +50,93 @@ const toast = useToast()
 const store = usePreferencesStore()
 
 function onBusClick(e: LeafletEvent) {
-  const busName = e.target?.options?.options?.bus?.bus_name
-  if (!busName) return
-  const bus = buses.value[busName]
-  selectedBusName.value = busName
-  emit('busClick', bus)
+    const busName = e.target?.options?.options?.bus?.bus_name
+    if (!busName) return
+    const bus = buses.value[busName]
+    selectedBusName.value = busName
+    emit('busClick', bus)
 }
 
 function getBusIcon(bus: Bus) {
-  const busDirection = bus.cardinal_direction
+    const busDirection = bus.cardinal_direction
 
-  let svg
-  if (busDirection >= 0 && busDirection <= 180) {
-    svg = store.darkTheme ? outlinedBusIconMirrored : busIconMirrored
-  } else {
-    svg = store.darkTheme ? outlinedBusIcon : busIcon
-  }
+    let svg
+    if (busDirection >= 0 && busDirection <= 180) {
+        svg = store.darkTheme ? outlinedBusIconMirrored : busIconMirrored
+    } else {
+        svg = store.darkTheme ? outlinedBusIcon : busIcon
+    }
 
-  const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90
+    const angle = (busDirection >= 0 && busDirection <= 180) ? busDirection + 270 : busDirection + 90
 
-  const markerSize = 40
+    const markerSize = 40
 
-  const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus'
-  const icon = leaflet.divIcon({
-    className: bus.bus_name === selectedBusName.value ? selectedIconClass : '',
-    html: leaflet.Util.template(svg, {
-      color: routeColors[bus.route_number], angle,
-    }),
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [markerSize / 2, markerSize / 2],
-  })
+    const selectedIconClass = store.darkTheme ? 'selected-bus-dark' : 'selected-bus'
+    const icon = leaflet.divIcon({
+        className: bus.bus_name === selectedBusName.value ? selectedIconClass : '',
+        html: leaflet.Util.template(svg, {
+            color: routeColors[bus.route_number], angle,
+        }),
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
+    })
 
-  return icon
+    return icon
 }
 
 function updateBusMarkers() {
-  // TODO: update latlng
-  busMarkers.value = []
-  for (const busId in buses.value) {
-    const routeId = buses.value[busId].route_id
-    const tripId = buses.value[busId].trip_id
+    // TODO: update latlng
+    busMarkers.value = []
+    for (const busId in buses.value) {
+        const routeId = buses.value[busId].route_id
+        const tripId = buses.value[busId].trip_id
 
-    if ((!props.selectedRoute || props.selectedRoute.route_id === routeId)
+        if ((!props.selectedRoute || props.selectedRoute.route_id === routeId)
       && (!props.selectedTripId || props.selectedTripId === tripId)) {
-      const bus = buses.value[busId]
-      const color = routeColors[bus.route_number]
-      busMarkers.value.push({ bus, color })
+            const bus = buses.value[busId]
+            const color = routeColors[bus.route_number]
+            busMarkers.value.push({ bus, color })
+        }
     }
-  }
 }
 
 function fetchBuses() {
-  const requests = props.activeRoutes.reduce<Promise<BusesResponse>[]>((acc, route) => {
-    if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
-      acc.push(getBusesOnRoute(route.route_number))
-    }
-    return acc
-  }, [])
+    const requests = props.activeRoutes.reduce<Promise<BusesResponse>[]>((acc, route) => {
+        if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
+            acc.push(getBusesOnRoute(route.route_number))
+        }
+        return acc
+    }, [])
 
-  Promise.all(requests).then((responses) => {
-    responses.forEach((res) => {
-      const fetchedBuses = res.data
-      fetchedBuses.forEach((bus) => {
-        buses.value[bus.bus_name] = bus
-      })
+    Promise.all(requests).then((responses) => {
+        responses.forEach((res) => {
+            const fetchedBuses = res.data
+            fetchedBuses.forEach((bus) => {
+                buses.value[bus.bus_name] = bus
+            })
+        })
+        emit('loadedBuses')
+        updateBusMarkers()
+    }).catch((errors) => {
+        emit('loadedBuses')
+        if (errors.code === 'ECONNABORTED') return // TODO
+        toast.error('Error fetching bus locations')
+        if (fetchBusesInterval.value) {
+            clearInterval(fetchBusesInterval.value)
+        }
     })
-    emit('loadedBuses')
-    updateBusMarkers()
-  }).catch((errors) => {
-    emit('loadedBuses')
-    if (errors.code === 'ECONNABORTED') return // TODO
-    toast.error('Error fetching bus locations')
-    if (fetchBusesInterval.value) {
-      clearInterval(fetchBusesInterval.value)
-    }
-  })
 }
 
 onMounted(() => {
-  emit('loadingBuses')
-  fetchBuses()
-  fetchBusesInterval.value = setInterval(fetchBuses, 5000)
+    emit('loadingBuses')
+    fetchBuses()
+    fetchBusesInterval.value = setInterval(fetchBuses, 5000)
 })
 
 onUnmounted(() => {
-  if (fetchBusesInterval.value) {
-    clearInterval(fetchBusesInterval.value)
-  }
+    if (fetchBusesInterval.value) {
+        clearInterval(fetchBusesInterval.value)
+    }
 })
 
 watch([() => props.selectedRoute, () => props.selectedTripId], updateBusMarkers)
@@ -144,9 +144,9 @@ watch([() => props.selectedRoute, () => props.selectedTripId], updateBusMarkers)
 watch(() => store.darkTheme, updateBusMarkers)
 
 watch(() => props.selectedBus, () => {
-  if (!props.selectedBus) {
-    selectedBusName.value = null
-  }
+    if (!props.selectedBus) {
+        selectedBusName.value = null
+    }
 })
 </script>
 

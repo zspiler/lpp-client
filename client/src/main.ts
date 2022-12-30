@@ -11,22 +11,22 @@ import './assets/main.css'
 const pinia = createPinia()
 
 const toastOptions = {
-  transition: 'Vue-Toastification__fade',
-  maxToasts: 5,
-  newestOnTop: true,
-  position: 'bottom-left',
-  timeout: 6000,
-  closeOnClick: true,
-  pauseOnFocusLoss: true,
-  pauseOnHover: true,
-  draggable: false,
-  showCloseButtonOnHover: false,
-  hideProgressBar: true,
-  icon: true,
+    transition: 'Vue-Toastification__fade',
+    maxToasts: 5,
+    newestOnTop: true,
+    position: 'bottom-left',
+    timeout: 6000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: false,
+    showCloseButtonOnHover: false,
+    hideProgressBar: true,
+    icon: true,
 }
 
 createApp(App)
-  .use(VueDragscroll)
-  .use(Toast, toastOptions)
-  .use(pinia)
-  .mount('#app')
+    .use(VueDragscroll)
+    .use(Toast, toastOptions)
+    .use(pinia)
+    .mount('#app')

@@ -48,95 +48,95 @@ const selectedStation: Ref<Station | undefined> = ref(undefined)
 const store = usePreferencesStore()
 
 function getStationZIndex(station: Station) {
-  return station.code === selectedStation.value?.code ? 1000 : null
+    return station.code === selectedStation.value?.code ? 1000 : null
 }
 
 function getMarkerIcon(marker: StationMarker) {
-  const markerSize = 20
+    const markerSize = 20
 
-  const isMarkerSelected = marker.station.code === selectedStation.value?.code
+    const isMarkerSelected = marker.station.code === selectedStation.value?.code
 
-  const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
-  const color = isMarkerSelected ? selectedMarkerColor : marker.color
-  const icon = leaflet.divIcon({
-    className: isMarkerSelected ? 'selected-station-icon' : 'station-icon',
-    html: leaflet.Util.template(stationIcon, {
-      color,
-    }),
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [markerSize / 2, markerSize / 2],
-  })
+    const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
+    const color = isMarkerSelected ? selectedMarkerColor : marker.color
+    const icon = leaflet.divIcon({
+        className: isMarkerSelected ? 'selected-station-icon' : 'station-icon',
+        html: leaflet.Util.template(stationIcon, {
+            color,
+        }),
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
+    })
 
-  return icon
+    return icon
 }
 
 function onStationClick(e: LeafletEvent) {
-  const stationCode = e.target?.options?.options?.station?.code
-  if (!stationCode) return
+    const stationCode = e.target?.options?.options?.station?.code
+    if (!stationCode) return
 
-  const stationsOnSelectedRoute = stations.value[props.selectedRoute.route_number]
-  selectedStation.value = stationsOnSelectedRoute.find((station) => station.code === stationCode)
+    const stationsOnSelectedRoute = stations.value[props.selectedRoute.route_number]
+    selectedStation.value = stationsOnSelectedRoute.find((station) => station.code === stationCode)
 
-  emit('stationClick', { ...selectedStation.value })
+    emit('stationClick', { ...selectedStation.value })
 }
 
 function updateStationMarkers() {
-  stationMarkers.value = []
+    stationMarkers.value = []
 
-  stationMarkers.value = stations.value[props.selectedRoute.route_number]
-    .filter((station) => !props.selectedTripId || station.trip.id === props.selectedTripId)
-    .reduce<StationMarker[]>((acc, station) => {
-      // filter out duplicate stations
-      if (acc.find((marker) => marker.station.code === station.code)) return acc
+    stationMarkers.value = stations.value[props.selectedRoute.route_number]
+        .filter((station) => !props.selectedTripId || station.trip.id === props.selectedTripId)
+        .reduce<StationMarker[]>((acc, station) => {
+            // filter out duplicate stations
+            if (acc.find((marker) => marker.station.code === station.code)) return acc
 
-      const stationColor = routeColors[props.selectedRoute.route_number]
-      const marker = { station, color: stationColor }
-      acc.push(marker)
-      return acc
-    }, [])
+            const stationColor = routeColors[props.selectedRoute.route_number]
+            const marker = { station, color: stationColor }
+            acc.push(marker)
+            return acc
+        }, [])
 }
 
 async function fetchStationsOnSelectedRoute() {
-  const selectedTrips = props.selectedRoute.trips
-    .filter((trip) => !props.selectedTripId || trip.id === props.selectedTripId)
+    const selectedTrips = props.selectedRoute.trips
+        .filter((trip) => !props.selectedTripId || trip.id === props.selectedTripId)
 
-  const requests = selectedTrips.map((trip) => getStationsOnTrip(trip.id))
+    const requests = selectedTrips.map((trip) => getStationsOnTrip(trip.id))
 
-  Promise.all(requests).then((responses) => {
-    responses.forEach((response, index) => {
-      const fetchedStationsWithTrip = response.data.map(
-        (station) => ({ ...station, trip: selectedTrips[index] }),
-      )
+    Promise.all(requests).then((responses) => {
+        responses.forEach((response, index) => {
+            const fetchedStationsWithTrip = response.data.map(
+                (station) => ({ ...station, trip: selectedTrips[index] }),
+            )
 
-      const routeNumber = props.selectedRoute.route_number
+            const routeNumber = props.selectedRoute.route_number
 
-      if (routeNumber in stations.value) {
-        stations.value[routeNumber] = stations.value[routeNumber].concat(fetchedStationsWithTrip)
-      } else {
-        stations.value[routeNumber] = fetchedStationsWithTrip
-      }
+            if (routeNumber in stations.value) {
+                stations.value[routeNumber] = stations.value[routeNumber].concat(fetchedStationsWithTrip)
+            } else {
+                stations.value[routeNumber] = fetchedStationsWithTrip
+            }
+        })
+        updateStationMarkers()
     })
-    updateStationMarkers()
-  })
 }
 
 function updateStations() {
-  if (props.selectedRoute.route_number in stations.value) {
-    updateStationMarkers()
-  } else {
-    fetchStationsOnSelectedRoute()
-  }
+    if (props.selectedRoute.route_number in stations.value) {
+        updateStationMarkers()
+    } else {
+        fetchStationsOnSelectedRoute()
+    }
 }
 
 onMounted(() => {
-  selectedStation.value = props.selectedStation
-  updateStations()
+    selectedStation.value = props.selectedStation
+    updateStations()
 })
 
 watch([() => props.selectedRoute, () => props.selectedTripId], updateStations)
 
 watch(() => props.selectedStation, () => {
-  selectedStation.value = props.selectedStation
+    selectedStation.value = props.selectedStation
 })
 
 </script>

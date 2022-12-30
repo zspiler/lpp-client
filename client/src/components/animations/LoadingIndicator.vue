@@ -11,18 +11,18 @@ import { ref, watchEffect } from 'vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
-  loading: {
-    type: Boolean,
-    required: true,
-  },
-  delayed: {
-    type: Boolean,
-    default: false,
-  },
-  fixed: {
-    type: Boolean,
-    default: false,
-  },
+    loading: {
+        type: Boolean,
+        required: true,
+    },
+    delayed: {
+        type: Boolean,
+        default: false,
+    },
+    fixed: {
+        type: Boolean,
+        default: false,
+    },
 })
 
 const store = usePreferencesStore()
@@ -30,19 +30,19 @@ const store = usePreferencesStore()
 const showLoader = ref(false)
 
 function delayLoadingAnimation() {
-  if (props.loading) {
-    setTimeout(() => {
-      if (props.loading) {
-        showLoader.value = true
-      }
-    }, 500)
-  } else {
-    showLoader.value = false
-  }
+    if (props.loading) {
+        setTimeout(() => {
+            if (props.loading) {
+                showLoader.value = true
+            }
+        }, 500)
+    } else {
+        showLoader.value = false
+    }
 }
 
 if (props.delayed) {
-  watchEffect(delayLoadingAnimation)
+    watchEffect(delayLoadingAnimation)
 }
 </script>
 

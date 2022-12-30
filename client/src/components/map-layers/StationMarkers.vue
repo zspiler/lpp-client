@@ -49,72 +49,72 @@ const toast = useToast()
 const store = usePreferencesStore()
 
 const nearbyStations = computed(() => {
-  return stations.value.filter((station) => {
-    const stationLatLng = leaflet.latLng([station.latitude, station.longitude])
-    const locationLatLng = leaflet.latLng(props.location)
-    return stationLatLng.distanceTo(locationLatLng) < maxDistanceToStation
-  })
+    return stations.value.filter((station) => {
+        const stationLatLng = leaflet.latLng([station.latitude, station.longitude])
+        const locationLatLng = leaflet.latLng(props.location)
+        return stationLatLng.distanceTo(locationLatLng) < maxDistanceToStation
+    })
 })
 
 function getStationZIndex(station: Station) {
-  return station.code === selectedStation.value?.code ? 1000 : null
+    return station.code === selectedStation.value?.code ? 1000 : null
 }
 
 function getMarkerIcon(marker: StationMarker) {
-  const markerSize = 20
+    const markerSize = 20
 
-  const isMarkerSelected = marker.station.code === selectedStation.value?.code
+    const isMarkerSelected = marker.station.code === selectedStation.value?.code
 
-  const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
-  const color = isMarkerSelected ? selectedMarkerColor : marker.color
-  const icon = leaflet.divIcon({
-    className: isMarkerSelected
-      ? 'selected-station-icon fade-in-station-icon'
-      : 'station-icon fade-in-station-icon',
-    html: leaflet.Util.template(stationIcon, { color }),
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [markerSize / 2, markerSize / 2],
-  })
+    const selectedMarkerColor = store.darkTheme ? 'white' : 'white'
+    const color = isMarkerSelected ? selectedMarkerColor : marker.color
+    const icon = leaflet.divIcon({
+        className: isMarkerSelected
+            ? 'selected-station-icon fade-in-station-icon'
+            : 'station-icon fade-in-station-icon',
+        html: leaflet.Util.template(stationIcon, { color }),
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
+    })
 
-  return icon
+    return icon
 }
 
 function onStationClick(e: LeafletEvent) {
-  const stationCode = e.target.options.options.station.code
-  selectedStation.value = stations.value.find((station) => station.code === stationCode)
-  emit('stationClick', selectedStation.value)
+    const stationCode = e.target.options.options.station.code
+    selectedStation.value = stations.value.find((station) => station.code === stationCode)
+    emit('stationClick', selectedStation.value)
 }
 
 function updateStationMarkers() {
-  const stationCodes = stationMarkers.value.map((marker) => marker.station.code)
-  const displayedStations = new Set(stationCodes)
+    const stationCodes = stationMarkers.value.map((marker) => marker.station.code)
+    const displayedStations = new Set(stationCodes)
 
-  const newNearbyStationMarkers = nearbyStations.value
-    .filter((station) => !displayedStations.has(station.code))
-    .map((station) => ({ station, color: 'rgba(0, 106, 46, 0.8)' }))
+    const newNearbyStationMarkers = nearbyStations.value
+        .filter((station) => !displayedStations.has(station.code))
+        .map((station) => ({ station, color: 'rgba(0, 106, 46, 0.8)' }))
 
-  stationMarkers.value = stationMarkers.value.concat(newNearbyStationMarkers)
+    stationMarkers.value = stationMarkers.value.concat(newNearbyStationMarkers)
 }
 
 async function fetchAllStations() {
-  try {
-    emit('loadingStations')
-    const response = await getStationsInRange(props.location.lat, props.location.lng)
-    stations.value = response.data
-    updateStationMarkers()
-    emit('loadedStations')
-  } catch {
-    toast.error('Error fetching stations')
-    emit('loadedStations')
-  }
+    try {
+        emit('loadingStations')
+        const response = await getStationsInRange(props.location.lat, props.location.lng)
+        stations.value = response.data
+        updateStationMarkers()
+        emit('loadedStations')
+    } catch {
+        toast.error('Error fetching stations')
+        emit('loadedStations')
+    }
 }
 
 onMounted(() => {
-  fetchAllStations()
+    fetchAllStations()
 })
 
 watch(() => props.selectedStation, () => {
-  selectedStation.value = props.selectedStation
+    selectedStation.value = props.selectedStation
 })
 
 watch(() => props.location, updateStationMarkers)

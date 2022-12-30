@@ -67,10 +67,10 @@ import { debounce } from 'debounce'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const props = defineProps({
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
+    disabled: {
+        type: Boolean,
+        default: false,
+    },
 })
 
 const store = usePreferencesStore()

@@ -5,20 +5,20 @@ import { useStorage } from '@vueuse/core'
 enum Mode { buses, stations }
 
 function userPrefersDarkTheme() {
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
 export const usePreferencesStore = defineStore('preferences', {
-  state: () => ({
-    darkTheme: useStorage('darkTheme', userPrefersDarkTheme()),
-    mode: useStorage('mode', Mode.stations),
-  }),
-  actions: {
-    toggleMode() {
-      this.mode = this.mode === Mode.buses ? Mode.stations : Mode.buses
+    state: () => ({
+        darkTheme: useStorage('darkTheme', userPrefersDarkTheme()),
+        mode: useStorage('mode', Mode.stations),
+    }),
+    actions: {
+        toggleMode() {
+            this.mode = this.mode === Mode.buses ? Mode.stations : Mode.buses
+        },
     },
-  },
-  getters: {
-    isInStationsMode: (state) => state.mode === Mode.stations,
-  },
+    getters: {
+        isInStationsMode: (state) => state.mode === Mode.stations,
+    },
 })

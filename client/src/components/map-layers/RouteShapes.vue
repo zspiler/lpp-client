@@ -43,50 +43,50 @@ const routeShapes: Ref<RouteShapesByRoute> = ref({})
 const toast = useToast()
 
 const selectedRouteShapes = computed(() => {
-  const routeNumber = props.selectedRoute.route_number
-  if (!(routeNumber in routeShapes.value)) return null
+    const routeNumber = props.selectedRoute.route_number
+    if (!(routeNumber in routeShapes.value)) return null
 
-  const selectedTrips = Object.keys(routeShapes.value[routeNumber])
-    .filter((tripId) => !props.selectedTripId || tripId === props.selectedTripId)
+    const selectedTrips = Object.keys(routeShapes.value[routeNumber])
+        .filter((tripId) => !props.selectedTripId || tripId === props.selectedTripId)
 
-  return selectedTrips.map((tripId) => (
-    {
-      ...routeShapes.value[routeNumber][tripId],
-      color: routeColors[routeNumber],
-      tripId,
-    }
-  ))
+    return selectedTrips.map((tripId) => (
+        {
+            ...routeShapes.value[routeNumber][tripId],
+            color: routeColors[routeNumber],
+            tripId,
+        }
+    ))
 })
 
 async function fetchSelectedRouteShapes() {
-  emit('loading')
-  try {
-    const response = await getRouteShapes(props.selectedRoute.route_id)
-    const routeShapeData = response.data
+    emit('loading')
+    try {
+        const response = await getRouteShapes(props.selectedRoute.route_id)
+        const routeShapeData = response.data
 
-    routeShapeData.forEach((trip) => {
-      const routeNumber = trip.route_number
-      const tripId = trip.trip_id
-      const routeShape = trip.geojson_shape
+        routeShapeData.forEach((trip) => {
+            const routeNumber = trip.route_number
+            const tripId = trip.trip_id
+            const routeShape = trip.geojson_shape
 
-      if (!routeShape) return
+            if (!routeShape) return
 
-      if (!(routeNumber in routeShapes.value)) {
-        routeShapes.value[routeNumber] = {}
-      }
+            if (!(routeNumber in routeShapes.value)) {
+                routeShapes.value[routeNumber] = {}
+            }
 
-      routeShapes.value[routeNumber][tripId] = routeShape
-    })
+            routeShapes.value[routeNumber][tripId] = routeShape
+        })
 
-    emit('loaded')
-  } catch {
-    toast.error('Error fetching route shape')
-    emit('loaded')
-  }
+        emit('loaded')
+    } catch {
+        toast.error('Error fetching route shape')
+        emit('loaded')
+    }
 }
 
 watchEffect(() => {
-  if (props.selectedRoute.route_number in routeShapes.value) return
-  fetchSelectedRouteShapes()
+    if (props.selectedRoute.route_number in routeShapes.value) return
+    fetchSelectedRouteShapes()
 })
 </script>

@@ -140,14 +140,14 @@ const store = usePreferencesStore()
 const ljubljanaCenter: Location = { lat: 46.0577, lng: 14.5057 }
 
 const mapConfig = ref({
-  zoom: 15,
-  center: [ljubljanaCenter.lat, ljubljanaCenter.lng],
-  minZoom: 12,
-  maxZoom: 18,
-  options: {
-    zoomSnap: 1,
-    zoomControl: false,
-  },
+    zoom: 15,
+    center: [ljubljanaCenter.lat, ljubljanaCenter.lng],
+    minZoom: 12,
+    maxZoom: 18,
+    options: {
+        zoomSnap: 1,
+        zoomControl: false,
+    },
 })
 
 const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`
@@ -171,157 +171,157 @@ const { userLocation, loadingUserLocation, userLocationError } = useGeolocation(
 const toast = useToast()
 
 const mapContainerClass = computed(() => {
-  return initialLoading.value ? 'loading-map' : ''
+    return initialLoading.value ? 'loading-map' : ''
 })
 
 async function fetchActiveRoutes() {
-  try {
-    const response = await getActiveRoutes()
-    const fetchedRoutes = response.data
-    const routes: RouteWithTrips[] = []
+    try {
+        const response = await getActiveRoutes()
+        const fetchedRoutes = response.data
+        const routes: RouteWithTrips[] = []
 
-    fetchedRoutes.forEach((route) => {
-      const previousRoute: RouteWithTrips = { ...routes[routes.length - 1], trips: [] }
+        fetchedRoutes.forEach((route) => {
+            const previousRoute: RouteWithTrips = { ...routes[routes.length - 1], trips: [] }
 
-      const trip = {
-        id: route.trip_id,
-        name: route.short_route_name,
-      }
-      if (routes.length > 0 && previousRoute.route_id === route.route_id) {
-        previousRoute.trips.push(trip)
-      } else {
-        routes.push({ ...route, trips: [trip] })
-      }
-    })
-    activeRoutes.value = routes
-    loadingActiveRoutes.value = false
-  } catch {
-    toast.error('Error fetching bus routes')
-    loadingActiveRoutes.value = false
-  }
+            const trip = {
+                id: route.trip_id,
+                name: route.short_route_name,
+            }
+            if (routes.length > 0 && previousRoute.route_id === route.route_id) {
+                previousRoute.trips.push(trip)
+            } else {
+                routes.push({ ...route, trips: [trip] })
+            }
+        })
+        activeRoutes.value = routes
+        loadingActiveRoutes.value = false
+    } catch {
+        toast.error('Error fetching bus routes')
+        loadingActiveRoutes.value = false
+    }
 }
 
 function selectBus(bus: Bus) {
-  selectedBus.value = bus
-  mapConfig.value.center = [bus.latitude, bus.longitude]
+    selectedBus.value = bus
+    mapConfig.value.center = [bus.latitude, bus.longitude]
 }
 
 function unselectBus() {
-  selectedBus.value = undefined
+    selectedBus.value = undefined
 }
 
 function selectStation(station: Station) {
-  selectedStation.value = station
-  mapConfig.value.center = [station.latitude, station.longitude]
+    selectedStation.value = station
+    mapConfig.value.center = [station.latitude, station.longitude]
 }
 
 function unselectStation() {
-  selectedStation.value = undefined
+    selectedStation.value = undefined
 }
 
 function updateMapTheme() {
-  if (leafletTilePane) {
-    if (store.darkTheme) {
-      leafletTilePane.classList.add('dark-map-tiles')
-    } else {
-      leafletTilePane.classList.remove('dark-map-tiles')
+    if (leafletTilePane) {
+        if (store.darkTheme) {
+            leafletTilePane.classList.add('dark-map-tiles')
+        } else {
+            leafletTilePane.classList.remove('dark-map-tiles')
+        }
     }
-  }
 }
 
 function initTilePane() {
-  leafletTilePane = document.querySelector('.leaflet-tile-pane')
-  updateMapTheme()
+    leafletTilePane = document.querySelector('.leaflet-tile-pane')
+    updateMapTheme()
 }
 
 function onMapMove(newCenter: Location) {
-  mapCenter.value = newCenter
+    mapCenter.value = newCenter
 }
 
 function onSelectedRouteToggle(routeNumber: string) {
-  if (selectedRoute.value?.route_number === routeNumber) {
-    selectedRoute.value = undefined
-    return
-  }
-  const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber)
-  if (newSelectedRoute) {
-    selectedRoute.value = newSelectedRoute
-  }
+    if (selectedRoute.value?.route_number === routeNumber) {
+        selectedRoute.value = undefined
+        return
+    }
+    const newSelectedRoute = activeRoutes.value.find((route) => route.route_number === routeNumber)
+    if (newSelectedRoute) {
+        selectedRoute.value = newSelectedRoute
+    }
 }
 
 function focusMapOnUserLocation() {
-  if (!userLocation.value) return
-  const { lat, lng } = userLocation.value
-  const [currentMapLat, currentMapLng] = mapConfig.value.center
-  if (currentMapLat === lat && currentMapLng === lng) {
-    // force pan by adding random noise
-    const randomDiff = (Math.random() - 0.5) / 1000000
-    mapConfig.value.center = [currentMapLat + randomDiff, currentMapLng + randomDiff]
-  } else {
-    mapConfig.value.center = [lat, lng]
-  }
+    if (!userLocation.value) return
+    const { lat, lng } = userLocation.value
+    const [currentMapLat, currentMapLng] = mapConfig.value.center
+    if (currentMapLat === lat && currentMapLng === lng) {
+        // force pan by adding random noise
+        const randomDiff = (Math.random() - 0.5) / 1000000
+        mapConfig.value.center = [currentMapLat + randomDiff, currentMapLng + randomDiff]
+    } else {
+        mapConfig.value.center = [lat, lng]
+    }
 }
 
 function getUserLocation() {
-  if (userLocation.value) {
-    focusMapOnUserLocation()
-    return
-  }
+    if (userLocation.value) {
+        focusMapOnUserLocation()
+        return
+    }
 
-  if (userLocationError.value && userLocationError.value.code === 1) {
-    toast.info('To display your location on the map you must allow the browser to use your location')
-    userLocation.value = null
-  }
+    if (userLocationError.value && userLocationError.value.code === 1) {
+        toast.info('To display your location on the map you must allow the browser to use your location')
+        userLocation.value = null
+    }
 
-  requestingLocation.value = true
+    requestingLocation.value = true
 }
 
 function onLoadingBuses() {
-  if (!initialLoading.value && !store.isInStationsMode) loadingBuses.value = true
+    if (!initialLoading.value && !store.isInStationsMode) loadingBuses.value = true
 }
 
 function onLoadedBuses() {
-  if (!store.isInStationsMode) initialLoading.value = false
-  loadingBuses.value = false
+    if (!store.isInStationsMode) initialLoading.value = false
+    loadingBuses.value = false
 }
 
 function clearSelectedTrip() {
-  selectedTrip.value = undefined
+    selectedTrip.value = undefined
 }
 
 function clearSelectedRoute() {
-  selectedTrip.value = undefined
-  selectedRoute.value = undefined
+    selectedTrip.value = undefined
+    selectedRoute.value = undefined
 }
 
 function onLoadedStations() {
-  if (store.isInStationsMode) initialLoading.value = false
+    if (store.isInStationsMode) initialLoading.value = false
 }
 
 onMounted(() => {
-  fetchActiveRoutes()
+    fetchActiveRoutes()
 })
 
 watch(selectedRoute, (newSelectedRoute) => {
-  selectedTrip.value = undefined
+    selectedTrip.value = undefined
 
-  if (selectedBus.value
-  && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
-    selectedBus.value = undefined
-  }
+    if (selectedBus.value
+     && (!newSelectedRoute || (selectedBus.value.route_number !== newSelectedRoute.route_number))) {
+        selectedBus.value = undefined
+    }
 })
 
 watch(() => store.darkTheme, updateMapTheme)
 
 watch(() => store.isInStationsMode, (isInStationsMode) => {
-  if (isInStationsMode) selectedBus.value = undefined
+    if (isInStationsMode) selectedBus.value = undefined
 })
 
 watch(userLocation, (newUserLocation) => {
-  if (newUserLocation) {
-    const { lat, lng } = newUserLocation
-    mapConfig.value.center = [lat, lng]
-  }
+    if (newUserLocation) {
+        const { lat, lng } = newUserLocation
+        mapConfig.value.center = [lat, lng]
+    }
 })
 
 </script>
