@@ -1,3 +1,5 @@
-# Run server
+## Tile server 
 
-`docker run -it -v $(pwd):/data -p 8080:80 klokantech/tileserver-gl`
+https://openmaptiles.org/docs/ 
+
+https://tileserver.readthedocs.io/en/latest/
