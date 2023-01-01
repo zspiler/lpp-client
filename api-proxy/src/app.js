@@ -19,7 +19,6 @@ async function proxyRequest(req, res, next) {
     try {
         const apiRes = await needle('get', `${LPP_API_BASE_URL}${req.url}`, options);
         const data = apiRes.body;
-        console.log(`${LPP_API_BASE_URL}${req.url}`);
         res.status(200).json(data);
     } catch (error) {
         next(error);
