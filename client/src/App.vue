@@ -144,8 +144,9 @@ const mapConfig = ref({
     center: [ljubljanaCenter.lat, ljubljanaCenter.lng],
     minZoom: 12,
     maxZoom: 18,
+    zoomAnimation: true,
+    markerZoomAnimation: true,
     options: {
-        zoomSnap: 1,
         zoomControl: false,
     },
 })
