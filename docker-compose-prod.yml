@@ -39,7 +39,9 @@ services:
       - "traefik.http.routers.tile-server.middlewares=tile-server-stripprefix"
       - "traefik.http.routers.tile-server.tls.certresolver=myresolver"
       - "traefik.http.middlewares.tile-server-stripprefix.stripprefix.prefixes=/tiles"
-    
+      - "traefik.http.middlewares.test-http-cache.plugin.httpCache.maxTtl=10000"
+      - "traefik.http.middlewares.test-http-cache.plugin.httpCache.memory.limit=1Gi"
+
   reverse-proxy:
     image: traefik:v2.9
     container_name: "traefik"
