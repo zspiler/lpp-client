@@ -21,8 +21,8 @@ import { useToast } from 'vue-toastification'
 import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
 import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons'
-import { getBusesOnRoute } from '@/api/api'
-import { Route, BusesResponse, Bus } from '@/api/types'
+import { getBusesOnRoutes } from '@/api/api'
+import { Route, Bus } from '@/api/types'
 
 type BusMarker = {
   bus: Bus,
@@ -101,25 +101,21 @@ function updateBusMarkers() {
 }
 
 function fetchBuses() {
-    const requests = props.activeRoutes.reduce<Promise<BusesResponse>[]>((acc, route) => {
+    const routeNumbers = props.activeRoutes.reduce<string[]>((acc, route) => {
         if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
-            acc.push(getBusesOnRoute(route.route_number))
+            acc.push(route.route_number)
         }
         return acc
     }, [])
 
-    Promise.all(requests).then((responses) => {
-        responses.forEach((res) => {
-            const fetchedBuses = res.data
-            fetchedBuses.forEach((bus) => {
-                buses.value[bus.bus_name] = bus
-            })
+    getBusesOnRoutes(routeNumbers).then((response) => {
+        response.data.forEach((bus) => {
+            buses.value[bus.bus_name] = bus
         })
         emit('loadedBuses')
         updateBusMarkers()
-    }).catch((errors) => {
-        emit('loadedBuses')
-        if (errors.code === 'ECONNABORTED') return // TODO
+    }).catch((error) => {
+        if (error.code === 'ECONNABORTED') return // TODO
         toast.error('Error fetching bus locations')
         if (fetchBusesInterval.value) {
             clearInterval(fetchBusesInterval.value)

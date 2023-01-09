@@ -19,6 +19,10 @@ export const getBusesOnRoute = (routeNumber: string) => axios
     .get<BusesResponse>(`bus/buses-on-route?route-group-number=${routeNumber}&specific=1`)
     .then(responseBody)
 
+export const getBusesOnRoutes = (routeNumbers: string[]) => axios
+    .get<BusesResponse>(`buses-on-routes?routes=${routeNumbers}`)
+    .then(responseBody)
+
 export const getRouteShapes = (routeId: string) => axios
     .get<RoutesResponse>(`route/routes?route-id=${routeId}&shape=1`)
     .then(responseBody)
