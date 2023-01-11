@@ -7,6 +7,7 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
     container_name: client
+    restart: always
     labels: 
       - "traefik.enable=true"
       - "traefik.http.routers.client.entrypoints=websecure"
@@ -18,6 +19,7 @@ services:
       context: ./api-proxy
       dockerfile: Dockerfile.prod
     container_name: api-proxy
+    restart: always
     expose: 
       - 5000
     labels: 
@@ -29,6 +31,7 @@ services:
   tile-server:
     image: klokantech/tileserver-gl
     container_name: tile-server
+    restart: always
     volumes:
       - ./tile-server/:/data
     command: --mbtiles slovenia.mbtiles --verbose
@@ -45,6 +48,7 @@ services:
   reverse-proxy:
     image: traefik:v2.9
     container_name: "traefik"
+    restart: always
     ports: 
       - 443:443
       - 80:80
