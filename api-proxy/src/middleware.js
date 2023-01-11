@@ -17,7 +17,7 @@ async function proxyRequest(req, res, next) {
     }
 }
 
-async function getBusesOnRoutes(req, res) {
+function getBusesOnRoutes(req, res) {
     const routes = req.query.routes?.split(',');
 
     if (!routes) {
@@ -25,16 +25,19 @@ async function getBusesOnRoutes(req, res) {
     }
 
     const routeUrl = (route) => `${LPP_API_BASE_URL}/api/bus/buses-on-route?route-group-number=${route}&specific=1`;
-    const promises = routes.map(
-        (route) => fetch(routeUrl(route), options).then((resp) => resp.json()),
-    );
 
-    Promise.all(promises).then((results) => {
-        const data = results.map((result) => result.data).flat();
-        res.send({ data });
-    });
+    try {
+        const promises = routes.map(
+            (route) => fetch(routeUrl(route), options).then((resp) => resp.json()),
+        );
 
-    return 500;
+        Promise.all(promises).then((results) => {
+            const data = results.map((result) => result.data).flat();
+            res.send({ data });
+        });
+    } catch (error) {
+        res.send(500);
+    }
 }
 
 module.exports = {
