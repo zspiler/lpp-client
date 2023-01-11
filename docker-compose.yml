@@ -19,10 +19,10 @@ services:
       - ./api-proxy/src:/app/src
   
   tile-server:
-    image: klokantech/tileserver-gl
+    image: maptiler/tileserver-gl
     container_name: tile-server
     ports:
-      - 8080:80
+      - 8080:8080
     volumes:
       - ./tile-server/:/data
 

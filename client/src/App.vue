@@ -151,7 +151,7 @@ const mapConfig = ref({
     },
 })
 
-const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/klokantech-basic/{z}/{x}/{y}.png?`
+const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/basic-preview/{z}/{x}/{y}.png?`
 
 const activeRoutes: Ref<RouteWithTrips[]> = ref([])
 const selectedRoute: Ref<RouteWithTrips | undefined> = ref(undefined)
