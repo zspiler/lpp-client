@@ -182,18 +182,18 @@ async function fetchActiveRoutes() {
         const routes: RouteWithTrips[] = []
 
         fetchedRoutes.forEach((route) => {
-            const previousRoute: RouteWithTrips = { ...routes[routes.length - 1], trips: [] }
-
             const trip = {
                 id: route.trip_id,
                 name: route.short_route_name,
             }
-            if (routes.length > 0 && previousRoute.route_id === route.route_id) {
-                previousRoute.trips.push(trip)
+
+            if (routes.length > 0 && routes[routes.length - 1].route_id === route.route_id) {
+                routes[routes.length - 1].trips.push(trip)
             } else {
                 routes.push({ ...route, trips: [trip] })
             }
         })
+
         activeRoutes.value = routes
         loadingActiveRoutes.value = false
     } catch {
