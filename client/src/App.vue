@@ -9,7 +9,7 @@
         track-by="route_id"
         label="route_number"
         placeholder="Select route"
-        select-label=""
+        :show-labels="false"
       >
         <template #clear>
           <button v-if="selectedRoute" class="multiselect__clear" @click="clearSelectedRoute" />
