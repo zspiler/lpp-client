@@ -1,109 +1,107 @@
 <template>
-  <div class="container">
-    <div class="dropdown-inputs">
+  <div class="dropdown-inputs">
+    <VueMultiselect
+      v-if="!initialLoading"
+      v-model="selectedRoute"
+      class="dropdown"
+      :options="activeRoutes"
+      track-by="route_id"
+      label="route_number"
+      placeholder="Select route"
+      :show-labels="false"
+    >
+      <template #clear>
+        <button v-if="selectedRoute" class="multiselect__clear" @click="clearSelectedRoute" />
+      </template>
+    </VueMultiselect>
+    <Transition name="fade">
       <VueMultiselect
-        v-if="!initialLoading"
-        v-model="selectedRoute"
+        v-if="!initialLoading && selectedRoute"
+        v-model="selectedTrip"
         class="dropdown"
-        :options="activeRoutes"
-        track-by="route_id"
-        label="route_number"
-        placeholder="Select route"
-        :show-labels="false"
+        :options="selectedRoute.trips"
+        track-by="id"
+        label="name"
+        placeholder="Select trip"
+        select-label=""
       >
         <template #clear>
-          <button v-if="selectedRoute" class="multiselect__clear" @click="clearSelectedRoute" />
+          <button v-if="selectedTrip" class="multiselect__clear" @click="clearSelectedTrip" />
         </template>
       </VueMultiselect>
-      <Transition name="fade">
-        <VueMultiselect
-          v-if="!initialLoading && selectedRoute"
-          v-model="selectedTrip"
-          class="dropdown"
-          :options="selectedRoute.trips"
-          track-by="id"
-          label="name"
-          placeholder="Select trip"
-          select-label=""
-        >
-          <template #clear>
-            <button v-if="selectedTrip" class="multiselect__clear" @click="clearSelectedTrip" />
-          </template>
-        </VueMultiselect>
-      </Transition>
-    </div>
-
-    <div class="map-container" :class="mapContainerClass">
-      <LMap
-        v-bind="mapConfig"
-        ref="map"
-        @ready="initTilePane"
-        @update:center="onMapMove"
-      >
-        <LTileLayer :url="tilesUrl" />
-        <BusMarkers
-          v-if="activeRoutes.length > 0"
-          :visible="(!store.isInStationsMode || !!selectedRoute)"
-          :active-routes="activeRoutes"
-          :selected-route="selectedRoute"
-          :selected-trip-id="selectedTrip?.id"
-          :selected-bus="selectedBus"
-          @bus-click="selectBus"
-          @loading-buses="onLoadingBuses"
-          @loaded-buses="onLoadedBuses"
-        />
-        <StationMarkers
-          :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
-          :location="mapCenter"
-          :selected-station="selectedStation"
-          @station-click="selectStation"
-          @loaded-stations="onLoadedStations"
-        />
-        <RouteStationMarkers
-          v-if="selectedRoute"
-          :selected-route="selectedRoute"
-          :selected-trip-id="selectedTrip?.id"
-          :selected-station="selectedStation"
-          @station-click="selectStation"
-        />
-        <RouteShapes
-          v-if="selectedRoute"
-          :selected-route="selectedRoute"
-          :selected-trip-id="selectedTrip?.id"
-          @loading="loadingRouteShapes = true"
-          @loaded="loadingRouteShapes = false"
-        />
-        <UserLocationMarker v-if="userLocation" :location="userLocation" />
-      </LMap>
-
-      <div v-if="!initialLoading" class="control-buttons">
-        <ModeToggleButton :disabled="!!selectedRoute" />
-        <ThemeToggleButton />
-        <UserLocationButton :active="!!userLocation" @click="getUserLocation" />
-      </div>
-
-      <Transition name="slide">
-        <StationInfoCard
-          v-if="selectedStation"
-          class="station-info-card"
-          :station="selectedStation"
-          :selected-route="selectedRoute"
-          @close="unselectStation"
-          @toggle-selected-route="onSelectedRouteToggle"
-        />
-      </Transition>
-      <Transition name="fade">
-        <BusInfoCard
-          v-if="selectedBus"
-          class="bus-info-card"
-          :bus="selectedBus"
-          @close="unselectBus"
-        />
-      </Transition>
-    </div>
-    <BusLoadingIndicator :loading="initialLoading" />
-    <LoadingIndicator :loading="loadingRouteShapes || loadingUserLocation || loadingBuses" delayed fixed />
+    </Transition>
   </div>
+
+  <div class="map-container" :class="mapContainerClass">
+    <LMap
+      v-bind="mapConfig"
+      ref="map"
+      @ready="initTilePane"
+      @update:center="onMapMove"
+    >
+      <LTileLayer :url="tilesUrl" />
+      <BusMarkers
+        v-if="activeRoutes.length > 0"
+        :visible="(!store.isInStationsMode || !!selectedRoute)"
+        :active-routes="activeRoutes"
+        :selected-route="selectedRoute"
+        :selected-trip-id="selectedTrip?.id"
+        :selected-bus="selectedBus"
+        @bus-click="selectBus"
+        @loading-buses="onLoadingBuses"
+        @loaded-buses="onLoadedBuses"
+      />
+      <StationMarkers
+        :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
+        :location="mapCenter"
+        :selected-station="selectedStation"
+        @station-click="selectStation"
+        @loaded-stations="onLoadedStations"
+      />
+      <RouteStationMarkers
+        v-if="selectedRoute"
+        :selected-route="selectedRoute"
+        :selected-trip-id="selectedTrip?.id"
+        :selected-station="selectedStation"
+        @station-click="selectStation"
+      />
+      <RouteShapes
+        v-if="selectedRoute"
+        :selected-route="selectedRoute"
+        :selected-trip-id="selectedTrip?.id"
+        @loading="loadingRouteShapes = true"
+        @loaded="loadingRouteShapes = false"
+      />
+      <UserLocationMarker v-if="userLocation" :location="userLocation" />
+    </LMap>
+
+    <div v-if="!initialLoading" class="control-buttons">
+      <ModeToggleButton :disabled="!!selectedRoute" />
+      <ThemeToggleButton />
+      <UserLocationButton :active="!!userLocation" @click="getUserLocation" />
+    </div>
+
+    <Transition name="slide">
+      <StationInfoCard
+        v-if="selectedStation"
+        class="station-info-card"
+        :station="selectedStation"
+        :selected-route="selectedRoute"
+        @close="unselectStation"
+        @toggle-selected-route="onSelectedRouteToggle"
+      />
+    </Transition>
+    <Transition name="fade">
+      <BusInfoCard
+        v-if="selectedBus"
+        class="bus-info-card"
+        :bus="selectedBus"
+        @close="unselectBus"
+      />
+    </Transition>
+  </div>
+  <BusLoadingIndicator :loading="initialLoading" />
+  <LoadingIndicator :loading="loadingRouteShapes || loadingUserLocation || loadingBuses" delayed fixed />
 </template>
 
 <script setup lang="ts">
@@ -361,12 +359,6 @@ watch(userLocation, (newUserLocation) => {
   transform: translate(-100%, 0);
 }
 
-.container {
-  height: 100vh;
-  width: 100vw;
-  position: relative;
-}
-
 .map-container {
   height: 100vh;
   width: 100vw;
@@ -389,10 +381,6 @@ watch(userLocation, (newUserLocation) => {
   }
 }
 
-#map {
-  height: 100vh;
-  width: 100vw;
-}
 .dropdown-inputs {
   position: absolute;
   top: 6%;
