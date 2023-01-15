@@ -37,14 +37,17 @@ interface Props {
   selectedBus?: Bus,
 }
 
+const updateInterval = 10000
+
 const props = defineProps<Props>()
 
 const emit = defineEmits(['loadingBuses', 'loadedBuses', 'busClick'])
 
 const buses: Ref<Record<string, Bus>> = ref({})
 const busMarkers: Ref<BusMarker[]> = ref([])
-const fetchBusesInterval: Ref<number | null> = ref(null)
 const selectedBusName = ref(null)
+const hasFetchedLatestBuses = ref(false)
+const timeOfLastUpdate = ref(Date.now())
 
 const toast = useToast()
 const store = usePreferencesStore()
@@ -101,6 +104,8 @@ function updateBusMarkers() {
 }
 
 function fetchBuses() {
+    hasFetchedLatestBuses.value = false
+
     const routeNumbers = props.activeRoutes.reduce<string[]>((acc, route) => {
         if (!props.selectedRoute || props.selectedRoute.route_id === route.route_id) {
             acc.push(route.route_number)
@@ -112,26 +117,38 @@ function fetchBuses() {
         response.data.forEach((bus) => {
             buses.value[bus.bus_name] = bus
         })
+
         emit('loadedBuses')
         updateBusMarkers()
+        hasFetchedLatestBuses.value = true
     }).catch((error) => {
-        if (error.code === 'ECONNABORTED') return // TODO
+        console.log('Error: ')
+        console.log(error)
+
+        hasFetchedLatestBuses.value = true
+        if (error.code === 'ECONNABORTED' || error.response?.status === 503) return
         toast.error('Error fetching bus locations')
-        if (fetchBusesInterval.value) {
-            clearInterval(fetchBusesInterval.value)
-        }
     })
 }
 
 onMounted(() => {
     emit('loadingBuses')
     fetchBuses()
-    fetchBusesInterval.value = setInterval(fetchBuses, 5000)
 })
 
-onUnmounted(() => {
-    if (fetchBusesInterval.value) {
-        clearInterval(fetchBusesInterval.value)
+watch(hasFetchedLatestBuses, () => {
+    if (!hasFetchedLatestBuses.value) return
+
+    const timeUntilNextUpdate = (timeOfLastUpdate.value + updateInterval) - Date.now()
+
+    if (timeUntilNextUpdate > 0) {
+        setTimeout(() => {
+            timeOfLastUpdate.value = Date.now()
+            fetchBuses()
+        }, timeUntilNextUpdate)
+    } else {
+        timeOfLastUpdate.value = Date.now()
+        fetchBuses()
     }
 })
 
