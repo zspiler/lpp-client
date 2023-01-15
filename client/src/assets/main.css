@@ -13,6 +13,16 @@ body {
     margin: 0;
 }
 
+/* Leaflet */
+
+.leaflet-marker-pane>* {
+    -webkit-transition: transform .8s ease-in-out;
+    -moz-transition: transform .8s ease-in-out;
+    -o-transition: transform .8s ease-in-out;
+    -ms-transition: transform .8s ease-in-out;
+    transition: transform .8s ease-in-out;
+}
+
 /* VueMultiselect */
 
 .multiselect__tag-icon::after {
