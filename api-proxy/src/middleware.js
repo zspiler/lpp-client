@@ -28,7 +28,7 @@ function getBusesOnRoutes(req, res) {
     }).catch((error) => {
         console.error('Error fetching buses: ');
         console.error(error.response?.data || error);
-        res.sendStatus(500);
+        res.sendStatus(error.code === 'ETIMEDOUT' ? 503 : 500);
     });
 }
 

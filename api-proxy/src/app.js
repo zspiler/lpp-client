@@ -11,8 +11,9 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/station/arrival*', cache('10 seconds'), proxyRequest);
-app.get('/api/bus/buses-on-route*', cache('10 seconds'), proxyRequest);
-app.get('/api/buses-on-routes', cache('10 seconds'), getBusesOnRoutes);
+app.get('/api/bus/buses-on-route*', cache('5 seconds'), proxyRequest);
+app.get('/api/buses-on-routes', cache('5 seconds'), getBusesOnRoutes);
+
 app.get('/api/route/routes*', cache('1 day'), proxyRequest);
 app.get('*', proxyRequest);
 
