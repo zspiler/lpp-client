@@ -53,7 +53,7 @@
       />
       <StationMarkers
         :visible="store.isInStationsMode && (!selectedRoute && !selectedTrip)"
-        :location="mapCenter"
+        :location="{ lat: mapConfig.center[0], lng: mapConfig.center[1] }"
         :selected-station="selectedStation"
         @station-click="selectStation"
         @loaded-stations="onLoadedStations"
@@ -78,7 +78,7 @@
     <div v-if="!initialLoading" class="control-buttons">
       <ModeToggleButton :disabled="!!selectedRoute" />
       <ThemeToggleButton />
-      <UserLocationButton :active="!!userLocation" @click="getUserLocation" />
+      <UserLocationButton :active="isMapFocusedOnUser" @click="getUserLocation" />
     </div>
 
     <Transition name="slide">
@@ -159,7 +159,6 @@ const loadingRouteShapes = ref(false)
 const loadingActiveRoutes = ref(true)
 const selectedBus: Ref<Bus | undefined> = ref(undefined)
 const selectedStation: Ref<Station | StationOnTrip | undefined> = ref(undefined)
-const mapCenter = ref(ljubljanaCenter)
 const map = ref(null)
 const requestingLocation = ref(false)
 const initialLoading = ref(true)
@@ -171,6 +170,15 @@ const toast = useToast()
 
 const mapContainerClass = computed(() => {
     return initialLoading.value ? 'loading-map' : ''
+})
+
+const isMapFocusedOnUser = computed(() => {
+    if (!userLocation.value) return false
+    const [mapCenterLat, mapCenterLng] = mapConfig.value.center
+
+    // we have to round the coordinates because mapConfig.center is more precise than user location
+    return mapCenterLat.toFixed(3) === userLocation.value.lat.toFixed(3)
+    && mapCenterLng.toFixed(3) === userLocation.value.lng.toFixed(3)
 })
 
 async function fetchActiveRoutes() {
@@ -234,7 +242,7 @@ function initTilePane() {
 }
 
 function onMapMove(newCenter: Location) {
-    mapCenter.value = newCenter
+    mapConfig.value.center = [newCenter.lat, newCenter.lng]
 }
 
 function onSelectedRouteToggle(routeNumber: string) {
@@ -251,14 +259,8 @@ function onSelectedRouteToggle(routeNumber: string) {
 function focusMapOnUserLocation() {
     if (!userLocation.value) return
     const { lat, lng } = userLocation.value
-    const [currentMapLat, currentMapLng] = mapConfig.value.center
-    if (currentMapLat === lat && currentMapLng === lng) {
-        // force pan by adding random noise
-        const randomDiff = (Math.random() - 0.5) / 1000000
-        mapConfig.value.center = [currentMapLat + randomDiff, currentMapLng + randomDiff]
-    } else {
-        mapConfig.value.center = [lat, lng]
-    }
+
+    mapConfig.value.center = [lat, lng]
 }
 
 function getUserLocation() {

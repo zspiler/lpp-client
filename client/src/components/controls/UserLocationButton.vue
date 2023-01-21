@@ -36,7 +36,6 @@ const store = usePreferencesStore()
 </script>
 
 <style scoped>
-
 .control-button {
   padding: 15px;
 }
