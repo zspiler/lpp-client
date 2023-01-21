@@ -49,12 +49,10 @@ function getMarkerIcon() {
 </script>
 
 <style>
+
 .user-marker {
   box-shadow: 0px 0px 3px 3px rgba(0, 0, 0, 0.2);
   border-radius: 50%;
-}
-
-.user-marker svg {
   filter: saturate(200%);
   animation: pulse 3s infinite ease-out;
   border-radius: 50%;
@@ -63,15 +61,12 @@ function getMarkerIcon() {
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgb(187, 201, 242);
-    transform: scale(1)
   }
   50% {
     box-shadow: 0 0 0 20px rgba(124, 255, 168, 0);
-    transform: scale(1.05)
   }
   100% {
     box-shadow: 0 0 0 30px rgba(255, 255, 255, 0);
-    transform: scale(1)
   }
 }
 
