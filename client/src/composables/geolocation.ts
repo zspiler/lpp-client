@@ -26,7 +26,7 @@ export function useGeolocation(requestingLocation: Ref<boolean>, geolocationOpti
     }
 
     watch(requestingLocation, () => {
-        if (requestingLocation) {
+        if (requestingLocation.value) {
             loadingUserLocation.value = true
             handlerId = navigator.geolocation.watchPosition(onSuccess, onError, options)
         }

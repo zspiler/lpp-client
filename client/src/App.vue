@@ -316,8 +316,8 @@ watch(() => store.isInStationsMode, (isInStationsMode) => {
     if (isInStationsMode) selectedBus.value = undefined
 })
 
-watch(userLocation, (newUserLocation) => {
-    if (newUserLocation) {
+watch(userLocation, (newUserLocation, oldUserLocation) => {
+    if (newUserLocation && oldUserLocation === null) {
         const { lat, lng } = newUserLocation
         mapConfig.value.center = [lat, lng]
     }
