@@ -22,13 +22,16 @@ function getBusesOnRoutes(req, res) {
         (route) => axios.get(`/api/bus/buses-on-route?route-group-number=${route}&specific=1`),
     );
 
-    Promise.all(promises).then((results) => {
-        const data = results.map((result) => result.data.data).flat();
+    Promise.allSettled(promises).then((results) => {
+        const data = results
+            .filter((result) => result.status === 'fulfilled')
+            .map((result) => result.value.data.data)
+            .flat();
         res.send({ data });
     }).catch((error) => {
         console.error('Error fetching buses: ');
         console.error(error.response?.data || error);
-        res.sendStatus(error.code === 'ETIMEDOUT' ? 503 : 500);
+        res.sendStatus(500);
     });
 }
 

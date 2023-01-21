@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, Ref } from 'vue'
+import { ref, onMounted, watch, Ref } from 'vue'
 import { LMarker } from '@vue-leaflet/vue-leaflet'
 import leaflet, { LeafletEvent } from 'leaflet'
 import { useToast } from 'vue-toastification'
@@ -126,7 +126,6 @@ function fetchBuses() {
         console.log(error)
 
         hasFetchedLatestBuses.value = true
-        if (error.code === 'ECONNABORTED' || error.response?.status === 503) return
         toast.error('Error fetching bus locations')
     })
 }

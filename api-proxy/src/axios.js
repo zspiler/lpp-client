@@ -9,7 +9,7 @@ const { LPP_API_BASE_URL } = require('./constants');
 const axiosInstance = axios.create({
     baseURL: LPP_API_BASE_URL,
     headers: { apikey: process.env.LPP_API_KEY },
-    timeout: 30000,
+    timeout: 15000,
     httpsAgent: new https.Agent({ keepAlive: true }),
 });
 
