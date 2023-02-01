@@ -1,48 +1,25 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <div>
-        {{ props.station.name }}
-      </div>
+      {{ props.station.name }}
       <div v-if="'trip' in props.station" class="destination-text">
         To: {{ props.station.trip?.name }}
       </div>
     </div>
 
-    <TimeFormatToggleButtons class="eta-mode-buttons" />
+    <TimeFormatToggleButtons v-if="!loading && arrivals.length > 0" class="time-format-buttons" />
 
     <div v-dragscroll class="card-content">
       <LoadingIndicator :loading="loading" delayed fixed />
       <template v-if="!loading">
-        <div v-if="(arrivals.length === 0)" class="no-arrivals-message">
-          No scheduled arrivals at this moment
-        </div>
-        <template v-else>
-          <div v-for="arrivalGroup in arrivals" :key="arrivalGroup.eta" class="arrivals">
-            <div class="arrival">
-              <div class="eta-text">
-                {{ formatEta(arrivalGroup.eta) }}
-              </div>
-              <div class="route-icons">
-                <span
-                  v-for="arrival in arrivalGroup.arrivals"
-                  :key="arrival.vehicle_id"
-                  class="route-icon"
-                  :class="{
-                    'selected-route-icon': arrival.route_name === selectedRouteNumber,
-                    'non-selected-route-icon': selectedRouteNumber && arrival.route_name !== selectedRouteNumber,
-                  }"
-                  :style="{ backgroundColor: routeColors[arrival.route_name] }"
-                  @click="selectArrival(arrival)"
-                >
-                  {{ arrival.route_name }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </template>
+        <ArrivalList
+          :arrivals="arrivals"
+          :selected-route-number="selectedRouteNumber"
+          @toggle-selected-route="(routeNumber) => $emit('toggleSelectedRoute', routeNumber)"
+        />
       </template>
     </div>
+
     <button class="close-button" @click="closeCard" />
   </div>
 </template>
@@ -51,20 +28,14 @@
 import { watch, ref, onMounted, onUnmounted, computed, Ref } from 'vue'
 import { useToast } from 'vue-toastification'
 
-import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
-import { routeColors } from '@/colors'
-import { compareRouteNumbers, dateToHHMM } from '@/utils'
-
+import { compareRouteNumbers } from '@/utils'
 import { getArrivals } from '@/api/api'
-import { Arrival, Station } from '@/api/types'
-import { RouteWithTrips, StationOnTrip } from '@/types'
-import TimeFormatToggleButtons from '@/components/cards/TimeFormatToggleButtons.vue'
-import { usePreferencesStore } from '@/stores/preferences'
+import { Station } from '@/api/types'
+import { RouteWithTrips, StationOnTrip, ArrivalGroup } from '@/types'
 
-type ArrivalGroup = {
-  eta: number,
-  arrivals: Arrival[]
-}
+import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
+import TimeFormatToggleButtons from '@/components/cards/TimeFormatToggleButtons.vue'
+import ArrivalList from '@/components/cards/ArrivalList.vue'
 
 interface Props {
   station: Station | StationOnTrip
@@ -74,7 +45,6 @@ interface Props {
 const arrivalsRefreshInterval = 15000
 
 const props = defineProps<Props>()
-
 const emit = defineEmits(['close', 'toggleSelectedRoute'])
 
 const loading = ref(true)
@@ -84,8 +54,6 @@ const fetchInterval: Ref<number | null> = ref(null)
 const toast = useToast()
 
 const selectedRouteNumber = computed(() => props.selectedRoute?.route_number)
-
-const store = usePreferencesStore()
 
 function closeCard() {
     emit('close')
@@ -127,20 +95,6 @@ async function fetchArrivals() {
     }
 }
 
-function selectArrival(arrival: Arrival) {
-    emit('toggleSelectedRoute', arrival.route_name)
-}
-
-function formatEta(minutesUntilArrival: number) {
-    if (!store.isHHMMArivalTimeFormat) {
-        return `${minutesUntilArrival} min`
-    }
-
-    const arrivalTime = new Date()
-    arrivalTime.setMinutes(arrivalTime.getMinutes() + minutesUntilArrival)
-    return dateToHHMM(arrivalTime)
-}
-
 onMounted(() => {
     loading.value = true
     fetchInterval.value = setInterval(fetchArrivals, arrivalsRefreshInterval)
@@ -153,20 +107,11 @@ onUnmounted(() => {
     }
 })
 
-watch(
-    () => props.station,
-    fetchArrivals,
-)
+watch(() => props.station, fetchArrivals)
 
 </script>
 
 <style scoped>
-.no-arrivals-message {
-  height: 90%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .card-header {
   height: 23%;
   font-size: x-large;
@@ -206,13 +151,7 @@ watch(
   }
 }
 
-.eta-text {
-  width: 60px;
-  flex-shrink: 0;
-  text-align: center;
-}
-
-.eta-mode-buttons {
+.time-format-buttons {
     height: 3%;
     width: 75%;
     margin: 0 auto;
@@ -222,50 +161,6 @@ watch(
   overflow: hidden;
   height: 72%;
   cursor: grab;
-}
-
-.route-icons {
-  display: flex;
-  justify-content: center;
-  flex-grow: 0;
-}
-
-.route-icon {
-  font-size: small;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 10px 3px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.route-icon:hover {
-  filter: drop-shadow(0px 0px 2px #ffffff) saturate(120%);
-}
-
-.non-selected-route-icon {
-  filter: brightness(70%);
-}
-
-.selected-route-icon {
-  filter: drop-shadow(0px 0px 2px #ffffff) saturate(120%);
-}
-
-.arrival {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10%;
-  justify-content: space-between;
-}
-
-.arrivals {
-  font-weight: bold;
-  margin: 0 auto;
-  width: 75%;
 }
 
 .close-button {
