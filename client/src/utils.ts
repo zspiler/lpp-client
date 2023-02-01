@@ -9,3 +9,7 @@ export function compareRouteNumbers(routeNumberA: string, routeNumberB: string) 
     }
     return 0
 }
+
+export function dateToHHMM(date: Date) {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}

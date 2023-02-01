@@ -8,17 +8,20 @@
         To: {{ props.station.trip?.name }}
       </div>
     </div>
+
+    <TimeFormatToggleButtons class="eta-mode-buttons" />
+
     <div v-dragscroll class="card-content">
       <LoadingIndicator :loading="loading" delayed fixed />
       <template v-if="!loading">
         <div v-if="(arrivals.length === 0)" class="no-arrivals-message">
           No scheduled arrivals at this moment
         </div>
-        <div v-else class="arrival-list">
+        <template v-else>
           <div v-for="arrivalGroup in arrivals" :key="arrivalGroup.eta" class="arrivals">
             <div class="arrival">
               <div class="eta-text">
-                {{ arrivalGroup.eta }} min
+                {{ formatEta(arrivalGroup.eta) }}
               </div>
               <div class="route-icons">
                 <span
@@ -37,7 +40,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </template>
       </template>
     </div>
     <button class="close-button" @click="closeCard" />
@@ -50,11 +53,13 @@ import { useToast } from 'vue-toastification'
 
 import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
 import { routeColors } from '@/colors'
-import { compareRouteNumbers } from '@/utils'
+import { compareRouteNumbers, dateToHHMM } from '@/utils'
 
 import { getArrivals } from '@/api/api'
 import { Arrival, Station } from '@/api/types'
 import { RouteWithTrips, StationOnTrip } from '@/types'
+import TimeFormatToggleButtons from '@/components/cards/TimeFormatToggleButtons.vue'
+import { usePreferencesStore } from '@/stores/preferences'
 
 type ArrivalGroup = {
   eta: number,
@@ -65,6 +70,8 @@ interface Props {
   station: Station | StationOnTrip
   selectedRoute?: RouteWithTrips
 }
+
+const arrivalsRefreshInterval = 15000
 
 const props = defineProps<Props>()
 
@@ -77,6 +84,8 @@ const fetchInterval: Ref<number | null> = ref(null)
 const toast = useToast()
 
 const selectedRouteNumber = computed(() => props.selectedRoute?.route_number)
+
+const store = usePreferencesStore()
 
 function closeCard() {
     emit('close')
@@ -122,9 +131,19 @@ function selectArrival(arrival: Arrival) {
     emit('toggleSelectedRoute', arrival.route_name)
 }
 
+function formatEta(minutesUntilArrival: number) {
+    if (!store.isHHMMArivalTimeFormat) {
+        return `${minutesUntilArrival} min`
+    }
+
+    const arrivalTime = new Date()
+    arrivalTime.setMinutes(arrivalTime.getMinutes() + minutesUntilArrival)
+    return dateToHHMM(arrivalTime)
+}
+
 onMounted(() => {
     loading.value = true
-    fetchInterval.value = setInterval(fetchArrivals, 10000)
+    fetchInterval.value = setInterval(fetchArrivals, arrivalsRefreshInterval)
     fetchArrivals()
 })
 
@@ -156,7 +175,7 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .destination-text {
@@ -171,10 +190,9 @@ watch(
   color: white;
   border-radius: 0 2em 2em 0;
   z-index: 9999;
-  text-align: center;
   width: 350px;
-  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px) brightness(75%) saturate(120%);
+  -webkit-backdrop-filter: blur(10px);
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -191,11 +209,19 @@ watch(
 .eta-text {
   width: 60px;
   flex-shrink: 0;
+  text-align: center;
+}
+
+.eta-mode-buttons {
+    height: 3%;
+    width: 75%;
+    margin: 0 auto;
 }
 
 .card-content {
   overflow: hidden;
-  height: 77%;
+  height: 72%;
+  cursor: grab;
 }
 
 .route-icons {
@@ -209,7 +235,6 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
   margin: 10px 3px;
   width: 40px;
   height: 40px;
@@ -241,9 +266,6 @@ watch(
   font-weight: bold;
   margin: 0 auto;
   width: 75%;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
 }
 
 .close-button {

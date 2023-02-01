@@ -1,5 +1,10 @@
 <template>
-  <button class="control-button" :class="{ 'dark-control-button': store.darkTheme, disabled: props.disabled }" :disabled="props.disabled" @click="debouncedToggleMode">
+  <button
+    class="control-button"
+    :class="{ 'dark-control-button': store.darkTheme, disabled: props.disabled }"
+    :disabled="props.disabled"
+    @click="debouncedToggleMode"
+  >
     <svg
       v-if="store.isInStationsMode"
       id="Layer_1"
