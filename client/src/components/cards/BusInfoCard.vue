@@ -51,7 +51,15 @@ function closeCard() {
   -moz-user-select: none;
   -o-user-select: none;
   user-select: none;
+  z-index: 10000;
 }
+
+@media only screen and (max-width: 480px) {
+  .card {
+    opacity: 0.95;
+  }
+}
+
 .route-number-icon {
   font-weight: bold;
   display: flex;

@@ -147,7 +147,8 @@ watch(() => props.station, fetchArrivals)
 
 @media only screen and (max-width: 1000px) {
   .card {
-    height: 30%;
+    border-radius: 2em 2em 2em 2em;
+    height: 40%;
   }
 }
 
@@ -159,7 +160,7 @@ watch(() => props.station, fetchArrivals)
 
 .card-content {
   overflow: hidden;
-  height: 72%;
+  height: 74%;
   cursor: grab;
 }
 

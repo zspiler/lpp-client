@@ -53,15 +53,15 @@ if (props.delayed) {
 }
 
 .loader {
-  width: 35px;
-  height: 35px;
+  width: 26px;
+  height: 26px;
   margin: auto;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  border: 6px solid rgba(0, 0, 0, 0.2);
-  border-top: 6px solid rgba(0, 0, 0, 0.4);
+  border: 5px solid rgba(0, 0, 0, 0.2);
+  border-top: 5px solid rgba(0, 0, 0, 0.4);
   border-radius: 50%;
   animation: spin 0.85s ease-in-out infinite;
   z-index: 9000;
