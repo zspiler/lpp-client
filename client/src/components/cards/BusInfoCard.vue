@@ -7,7 +7,7 @@
     </div>
     <h4> {{ props.bus.route_name }} </h4>
     <p>To: {{ props.bus.destination }}</p>
-    <button class="close-button" @click="closeCard" />
+    <CloseButton class="close-button" @click="closeCard" />
   </div>
 </template>
 
@@ -15,6 +15,7 @@
 import { computed } from 'vue'
 import { routeColors } from '@/colors'
 import { Bus } from '@/api/types'
+import CloseButton from '@/components/cards/CloseButton.vue'
 
 interface Props {
   bus: Bus
@@ -60,6 +61,12 @@ function closeCard() {
   }
 }
 
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
 .route-number-icon {
   font-weight: bold;
   display: flex;
@@ -72,32 +79,4 @@ function closeCard() {
   border-radius: 50%;
 }
 
-.close-button {
-  background: none;
-  border: none;
-  position: absolute;
-  top: 10%;
-  right: 5%;
-  height: 22px;
-  width: 22px;
-  opacity: 0.4;
-  cursor: pointer;
-}
-.close-button:hover {
-  opacity: 1;
-}
-.close-button:before, .close-button:after {
-  position: absolute;
-  content: '';
-  height: 22px;
-  width: 2px;
-  top: 0px;
-  background-color: rgb(253, 253, 253);
-}
-.close-button:before {
-  transform: rotate(45deg);
-}
-.close-button:after {
-  transform: rotate(-45deg);
-}
 </style>

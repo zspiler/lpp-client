@@ -20,7 +20,7 @@
       </template>
     </div>
 
-    <button class="close-button" @click="closeCard" />
+    <CloseButton @click="closeCard" />
   </div>
 </template>
 
@@ -36,6 +36,7 @@ import { RouteWithTrips, StationOnTrip, ArrivalGroup } from '@/types'
 import LoadingIndicator from '@/components/animations/LoadingIndicator.vue'
 import TimeFormatToggleButtons from '@/components/cards/TimeFormatToggleButtons.vue'
 import ArrivalList from '@/components/cards/ArrivalList.vue'
+import CloseButton from '@/components/cards/CloseButton.vue'
 
 interface Props {
   station: Station | StationOnTrip
@@ -165,35 +166,9 @@ watch(() => props.station, fetchArrivals)
 }
 
 .close-button {
-  background: none;
-  border: none;
   position: absolute;
-  top: 5%;
-  right: 5%;
-  height: 22px;
-  width: 22px;
-  opacity: 0.4;
-  cursor: pointer;
+  top: 20px;
+  right: 20px;
 }
 
-.close-button:hover {
-  opacity: 1;
-}
-
-.close-button:before, .close-button:after {
-  position: absolute;
-  content: '';
-  height: 22px;
-  width: 2px;
-  top: 0px;
-  background-color: rgb(253, 253, 253);
-}
-
-.close-button:before {
-  transform: rotate(45deg);
-}
-
-.close-button:after {
-  transform: rotate(-45deg);
-}
 </style>
