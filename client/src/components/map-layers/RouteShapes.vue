@@ -20,7 +20,7 @@ import { useToast } from 'vue-toastification'
 import { GeoJsonObject } from 'geojson'
 
 import { routeColors } from '@/colors'
-import { getRouteShapes } from '@/api/api'
+import { getRouteShapes } from '@/api'
 import { Route } from '@/api/types'
 
 type RouteShapesByRoute = {

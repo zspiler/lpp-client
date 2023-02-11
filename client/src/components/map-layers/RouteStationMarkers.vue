@@ -18,7 +18,7 @@ import leaflet, { LeafletEvent } from 'leaflet'
 import { stationIcon } from '@/assets/icons/svgIcons'
 import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
-import { getStationsOnTrip } from '@/api/api'
+import { getStationsOnTrip } from '@/api'
 import { Station } from '@/api/types'
 import { RouteWithTrips, StationOnTrip } from '@/types'
 

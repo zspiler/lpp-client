@@ -20,7 +20,7 @@ import { useToast } from 'vue-toastification'
 
 import { stationIcon } from '@/assets/icons/svgIcons'
 import { usePreferencesStore } from '@/stores/preferences'
-import { getStationsInRange } from '@/api/api'
+import { getStationsInRange } from '@/api'
 import { Location } from '@/types'
 import { Station } from '@/api/types'
 

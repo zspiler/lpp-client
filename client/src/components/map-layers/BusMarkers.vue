@@ -21,7 +21,7 @@ import { useToast } from 'vue-toastification'
 import { usePreferencesStore } from '@/stores/preferences'
 import { routeColors } from '@/colors'
 import { busIcon, busIconMirrored, outlinedBusIcon, outlinedBusIconMirrored } from '@/assets/icons/svgIcons'
-import { getBusesOnRoutes } from '@/api/api'
+import { getBusesOnRoutes } from '@/api'
 import { Route, Bus } from '@/api/types'
 
 type BusMarker = {

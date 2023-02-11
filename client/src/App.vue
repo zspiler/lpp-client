@@ -129,7 +129,7 @@ import UserLocationMarker from '@/components/map-layers/UserLocationMarker.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 import { useGeolocation } from '@/composables/geolocation'
 import RouteStationMarkers from '@/components/map-layers/RouteStationMarkers.vue'
-import { getActiveRoutes } from '@/api/api'
+import { getActiveRoutes } from '@/api'
 import { Bus, Station } from '@/api/types'
 import { RouteWithTrips, Trip, Location, StationOnTrip } from '@/types'
 

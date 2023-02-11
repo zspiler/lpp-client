@@ -29,7 +29,7 @@ import { watch, ref, onMounted, onUnmounted, computed, Ref } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { compareRouteNumbers } from '@/utils'
-import { getArrivals } from '@/api/api'
+import { getArrivals } from '@/api'
 import { Station } from '@/api/types'
 import { RouteWithTrips, StationOnTrip, ArrivalGroup } from '@/types'
 
@@ -43,7 +43,7 @@ interface Props {
   selectedRoute?: RouteWithTrips
 }
 
-const arrivalsRefreshInterval = 15000
+const arrivalsRefreshInterval = 30000
 
 const props = defineProps<Props>()
 const emit = defineEmits(['close', 'toggleSelectedRoute'])
