@@ -28,24 +28,24 @@ services:
       - "traefik.http.routers.api-proxy.rule=(Host(`${DOMAIN}`) && PathPrefix(`/api`))" 
       - "traefik.http.routers.api-proxy.tls.certresolver=myresolver"
 
-  tile-server:
-    image: maptiler/tileserver-gl
-    container_name: tile-server
-    restart: always
-    volumes:
-      - ./tile-server/:/data
-    command: --mbtiles slovenia.mbtiles --verbose --public_url=https://${DOMAIN}/tiles/
-    expose: 
-      - 8080
-    labels: 
-      - "traefik.enable=true"
-      - "traefik.http.routers.tile-server.entrypoints=websecure"
-      - "traefik.http.routers.tile-server.rule=(Host(`${DOMAIN}`) && PathPrefix(`/tiles`))" 
-      - "traefik.http.routers.tile-server.middlewares=tile-server-stripprefix"
-      - "traefik.http.routers.tile-server.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.tile-server-stripprefix.stripprefix.prefixes=/tiles"
-      - "traefik.http.middlewares.test-http-cache.plugin.httpCache.maxTtl=10000000"
-      - "traefik.http.middlewares.test-http-cache.plugin.httpCache.memory.limit=2Gi"
+  # tile-server:
+  #   image: maptiler/tileserver-gl
+  #   container_name: tile-server
+  #   restart: always
+  #   volumes:
+  #     - ./tile-server/:/data
+  #   command: --mbtiles slovenia.mbtiles --verbose --public_url=https://${DOMAIN}/tiles/
+  #   expose: 
+  #     - 8080
+  #   labels: 
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.tile-server.entrypoints=websecure"
+  #     - "traefik.http.routers.tile-server.rule=(Host(`${DOMAIN}`) && PathPrefix(`/tiles`))" 
+  #     - "traefik.http.routers.tile-server.middlewares=tile-server-stripprefix"
+  #     - "traefik.http.routers.tile-server.tls.certresolver=myresolver"
+  #     - "traefik.http.middlewares.tile-server-stripprefix.stripprefix.prefixes=/tiles"
+  #     - "traefik.http.middlewares.test-http-cache.plugin.httpCache.maxTtl=10000000"
+  #     - "traefik.http.middlewares.test-http-cache.plugin.httpCache.memory.limit=2Gi"
 
   reverse-proxy:
     image: traefik:v2.9

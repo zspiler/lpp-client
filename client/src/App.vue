@@ -149,7 +149,8 @@ const mapConfig = ref({
     },
 })
 
-const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/basic-preview/{z}/{x}/{y}.png?`
+// const tilesUrl = `${import.meta.env.VITE_TILESERVER_URL}styles/basic-preview/{z}/{x}/{y}.png?`
+const tilesUrl = 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
 
 const activeRoutes: Ref<RouteWithTrips[]> = ref([])
 const selectedRoute: Ref<RouteWithTrips | undefined> = ref(undefined)

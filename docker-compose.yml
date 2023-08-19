@@ -18,11 +18,11 @@ services:
     volumes:
       - ./api-proxy/src:/app/src
   
-  tile-server:
-    image: maptiler/tileserver-gl
-    container_name: tile-server
-    ports:
-      - 8080:8080
-    volumes:
-      - ./tile-server/:/data
+  # tile-server:
+  #   image: maptiler/tileserver-gl
+  #   container_name: tile-server
+  #   ports:
+  #     - 8080:8080
+  #   volumes:
+  #     - ./tile-server/:/data
 
